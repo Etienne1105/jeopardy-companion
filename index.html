@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Géopardie — Compagnon Pop Culture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#05082b; --navy:#0a0e5e; --royal:#0b1fb5; --royal-hi:#1a31d8; --royal-lo:#081584;
+    --gold:#e8b923; --gold-bright:#ffd23f; --won:#16a34a; --won-hi:#22c55e; --lost:#d8313b; --lost-hi:#ef4444;
+    --text:#fff; --muted:#98a2dc; --ease:cubic-bezier(.2,.8,.25,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Oswald',sans-serif;
+    background:radial-gradient(120% 80% at 50% -10%, #141a8a 0%, var(--navy) 38%, var(--navy-deep) 100%);
+    color:var(--text); min-height:100dvh;
+    padding:max(env(safe-area-inset-top),12px) max(env(safe-area-inset-right),12px) max(env(safe-area-inset-bottom),16px) max(env(safe-area-inset-left),12px);
+    max-width:720px; margin:0 auto; -webkit-text-size-adjust:100%;
+  }
+
+  /* ---------- Sélecteur d'épisode ---------- */
+  .selector{}
+  .sel-head{text-align:center;margin-bottom:16px;}
+  .wordmark{
+    font-family:'Anton',sans-serif; font-size:clamp(1.8rem,8vw,2.6rem); letter-spacing:1px; line-height:.9;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold)); -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent; text-shadow:0 2px 0 rgba(0,0,0,.25); margin:0;
+  }
+  .wordmark span{display:block;font-size:.34em;letter-spacing:3px;color:var(--muted);-webkit-text-fill-color:var(--muted);
+    background:none;font-family:'Oswald';font-weight:600;margin-top:4px;text-transform:uppercase;}
+  .sel-sub{color:var(--muted);font-size:.82rem;margin-top:8px;line-height:1.5;}
+  .ep-grid{display:grid;gap:9px;}
+  .ep-card{
+    text-align:left;width:100%;cursor:pointer;
+    background:linear-gradient(180deg,var(--royal-hi),var(--royal-lo));
+    border:1px solid rgba(255,255,255,.12); border-radius:13px; padding:12px 14px;
+    transition:transform .12s var(--ease),box-shadow .2s; touch-action:manipulation; color:var(--text);
+  }
+  .ep-card:active{transform:scale(.98);}
+  .ep-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px;}
+  .ep-num{font-family:'Anton';font-size:1.15rem;color:var(--gold-bright);line-height:1;}
+  .ep-num small{font-family:'Oswald';font-weight:600;font-size:.62rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-left:6px;}
+  .ep-badge{font-family:'Oswald';font-weight:600;font-size:.6rem;letter-spacing:.5px;text-transform:uppercase;
+    padding:3px 7px;border-radius:20px;flex:0 0 auto;}
+  .ep-badge.full{background:rgba(34,197,94,.2);color:#86efac;border:1px solid rgba(34,197,94,.4);}
+  .ep-badge.part{background:rgba(232,185,35,.16);color:var(--gold-bright);border:1px solid rgba(232,185,35,.35);}
+  .ep-cats{font-size:.74rem;color:#cdd4ff;line-height:1.45;}
+
+  /* ---------- Jeu ---------- */
+  .game{display:none;}
+  .topbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .ep-pill{
+    flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;
+    background:rgba(11,31,181,.4);border:1px solid rgba(152,162,220,.3);border-radius:12px;
+    padding:7px 12px;cursor:pointer;transition:background .2s;touch-action:manipulation;
+  }
+  .ep-pill:active{background:rgba(11,31,181,.6);}
+  .ep-pill .lbl{font-size:.58rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .ep-pill .val{font-family:'Anton';font-size:1rem;color:var(--gold-bright);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .icon-btn{border:1px solid rgba(152,162,220,.35);background:rgba(11,31,181,.35);color:var(--text);
+    width:42px;height:42px;border-radius:12px;font-size:1.1rem;cursor:pointer;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;transition:transform .12s var(--ease);touch-action:manipulation;}
+  .icon-btn:active{transform:scale(.92);}
+
+  .score-card{position:sticky;top:8px;z-index:30;background:linear-gradient(180deg,var(--royal-hi),var(--royal-lo));
+    border:1px solid rgba(255,210,63,.35);border-radius:18px;padding:12px 16px 11px;text-align:center;
+    box-shadow:0 8px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.18);margin-bottom:12px;overflow:hidden;}
+  .score-label{font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:#cdd4ff;font-weight:600;}
+  .score-value{font-family:'Anton';font-size:clamp(2.4rem,14vw,3.8rem);line-height:.95;color:var(--gold-bright);
+    text-shadow:0 3px 0 rgba(0,0,0,.4), 0 0 22px rgba(255,210,63,.25);transition:color .25s;font-variant-numeric:tabular-nums;}
+  .score-value.neg{color:var(--lost-hi);text-shadow:0 3px 0 rgba(0,0,0,.4),0 0 22px rgba(239,68,68,.3);}
+  .score-card.flash-win{animation:fw .5s var(--ease);} .score-card.flash-loss{animation:fl .5s var(--ease);}
+  @keyframes fw{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6),0 8px 28px rgba(0,0,0,.45);}100%{box-shadow:0 0 0 30px rgba(34,197,94,0),0 8px 28px rgba(0,0,0,.45);}}
+  @keyframes fl{0%{box-shadow:0 0 0 0 rgba(239,68,68,.6),0 8px 28px rgba(0,0,0,.45);}100%{box-shadow:0 0 0 30px rgba(239,68,68,0),0 8px 28px rgba(0,0,0,.45);}}
+
+  .rounds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+  .round-btn{border:1px solid rgba(152,162,220,.3);background:rgba(8,21,132,.5);color:var(--muted);
+    font-family:'Oswald';font-weight:600;font-size:.76rem;letter-spacing:.5px;text-transform:uppercase;
+    padding:10px 4px;border-radius:11px;cursor:pointer;transition:all .2s var(--ease);touch-action:manipulation;}
+  .round-btn.active{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1400;border-color:var(--gold-bright);box-shadow:0 4px 14px rgba(255,210,63,.3);}
+  .round-btn:active{transform:scale(.96);}
+
+  .banner{background:rgba(232,185,35,.12);border:1px solid rgba(232,185,35,.3);border-radius:10px;
+    padding:8px 12px;margin-bottom:10px;font-size:.72rem;color:var(--gold-bright);line-height:1.4;}
+
+  .board{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;}
+  .cat-head{background:linear-gradient(180deg,var(--royal-hi),var(--royal));border:1px solid rgba(255,255,255,.12);
+    border-radius:9px 9px 4px 4px;min-height:56px;display:flex;align-items:center;justify-content:center;padding:4px 3px;
+    text-align:center;font-family:'Oswald';font-weight:700;font-size:clamp(.44rem,2.3vw,.72rem);line-height:1.04;
+    text-transform:uppercase;letter-spacing:.2px;color:#fff;outline:none;cursor:text;transition:box-shadow .2s;word-break:break-word;hyphens:auto;}
+  .cat-head:focus{box-shadow:0 0 0 2px var(--gold-bright);}
+  .cat-head:empty::before{content:"+ catégorie";color:var(--muted);font-weight:400;font-style:italic;opacity:.6;}
+
+  .cell{position:relative;background:linear-gradient(180deg,var(--royal-hi) 0%,var(--royal) 45%,var(--royal-lo) 100%);
+    border:1px solid rgba(255,255,255,.10);border-top-color:rgba(255,255,255,.22);border-radius:7px;aspect-ratio:1/.82;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Anton';
+    font-size:clamp(.9rem,5.2vw,1.5rem);color:var(--gold);text-shadow:0 2px 0 rgba(0,0,0,.45);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 3px 8px rgba(0,0,0,.3);
+    transition:transform .1s var(--ease),background .25s,opacity .25s;touch-action:manipulation;user-select:none;overflow:hidden;}
+  .cell:active{transform:scale(.93);}
+  .cell.pending{animation:pulse .55s var(--ease) infinite alternate;}
+  @keyframes pulse{from{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 0 rgba(255,210,63,0);}to{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 3px rgba(255,210,63,.7);}}
+  .cell.won{background:linear-gradient(180deg,var(--won-hi),var(--won));color:#eafff0;opacity:.9;}
+  .cell.lost{background:linear-gradient(180deg,var(--lost-hi),var(--lost));color:#ffecec;opacity:.82;}
+  .cell.dd{box-shadow:inset 0 0 0 2px var(--gold-bright), 0 3px 8px rgba(0,0,0,.3);}
+  .cell .amt{transition:opacity .2s;} .cell.won .amt,.cell.lost .amt{opacity:.5;font-size:.72em;}
+  .badge{position:absolute;top:3px;right:4px;font-family:'Oswald';font-weight:700;font-size:.9rem;line-height:1;}
+  .cell.won .badge{color:#eafff0;} .cell.lost .badge{color:#ffecec;}
+  .ddtag{position:absolute;top:2px;left:4px;font-family:'Oswald';font-weight:700;font-size:.5rem;letter-spacing:.5px;color:var(--gold-bright);opacity:.9;}
+  .cell.won.shake{animation:pop .4s var(--ease);} @keyframes pop{0%{transform:scale(1);}40%{transform:scale(1.12);}100%{transform:scale(1);}}
+  .cell.lost.shake{animation:shk .4s var(--ease);} @keyframes shk{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+  .final-panel{background:linear-gradient(180deg,var(--royal),var(--royal-lo));border:1px solid rgba(255,210,63,.3);
+    border-radius:16px;padding:18px 16px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+  .final-cat{font-family:'Oswald';font-weight:700;text-transform:uppercase;font-size:1rem;letter-spacing:1px;color:#fff;
+    outline:none;cursor:text;padding:6px;border-radius:8px;margin-bottom:14px;border-bottom:1.5px dotted rgba(255,210,63,.5);display:inline-block;min-width:60%;}
+  .final-cat:focus{box-shadow:0 0 0 2px var(--gold-bright);}
+  .wager-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;}
+  .wager-row label{font-size:.8rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .wager-input{font-family:'Anton';font-size:1.5rem;width:130px;text-align:center;background:var(--navy-deep);color:var(--gold-bright);
+    border:1px solid rgba(255,210,63,.4);border-radius:10px;padding:6px 8px;-moz-appearance:textfield;}
+  .wager-input::-webkit-outer-spin-button,.wager-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .final-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .final-btn{font-family:'Oswald';font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:.92rem;padding:16px 8px;
+    border-radius:12px;cursor:pointer;border:none;color:#fff;transition:transform .12s var(--ease);touch-action:manipulation;}
+  .final-btn:active{transform:scale(.95);} .final-btn.good{background:linear-gradient(180deg,var(--won-hi),var(--won));}
+  .final-btn.bad{background:linear-gradient(180deg,var(--lost-hi),var(--lost));} .final-btn:disabled{opacity:.4;cursor:default;}
+  .final-result{margin-top:14px;font-weight:600;font-size:.92rem;min-height:1.2em;color:var(--gold-bright);}
+
+  .reveal-wrap{margin-top:12px;}
+  .reveal-btn{width:100%;border:1px dashed rgba(255,210,63,.45);background:rgba(232,185,35,.08);color:var(--gold-bright);
+    font-family:'Oswald';font-weight:600;font-size:.84rem;text-transform:uppercase;letter-spacing:.5px;padding:13px;border-radius:12px;
+    cursor:pointer;transition:background .2s;touch-action:manipulation;}
+  .reveal-btn:active{background:rgba(232,185,35,.16);}
+  .reveal-content{display:none;background:rgba(8,21,132,.55);border:1px solid rgba(255,210,63,.3);border-radius:12px;padding:14px;margin-top:8px;}
+  .reveal-content h4{margin:0 0 8px;font-family:'Anton';color:var(--gold-bright);font-size:1rem;font-weight:400;letter-spacing:.5px;}
+  .reveal-content .res-line{font-size:.82rem;color:#dfe4ff;line-height:1.55;}
+  .reveal-content .res-win{color:var(--won-hi);font-weight:600;}
+  .reveal-content .res-me{margin-top:10px;padding-top:10px;border-top:1px solid rgba(152,162,220,.25);font-size:.86rem;}
+  .reveal-content .res-me b{color:var(--gold-bright);}
+
+  .actions{display:flex;gap:8px;margin-top:14px;}
+  .action-btn{flex:1;border:1px solid rgba(152,162,220,.3);background:rgba(8,21,132,.5);color:var(--muted);
+    font-family:'Oswald';font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;padding:12px 6px;border-radius:11px;
+    cursor:pointer;transition:all .18s var(--ease);touch-action:manipulation;}
+  .action-btn:active{transform:scale(.96);} .action-btn:disabled{opacity:.35;cursor:default;}
+  .action-btn.danger{color:#ffb4b4;border-color:rgba(216,49,59,.4);}
+  .hint{text-align:center;color:var(--muted);font-size:.72rem;margin-top:12px;line-height:1.55;opacity:.85;}
+  .hint b{color:var(--gold);font-weight:600;}
+
+  /* ---------- Overlay Daily Double ---------- */
+  .dd-overlay{display:none;position:fixed;inset:0;z-index:60;background:rgba(2,4,20,.78);backdrop-filter:blur(3px);
+    align-items:center;justify-content:center;padding:20px;}
+  .dd-overlay.open{display:flex;}
+  .dd-dialog{width:100%;max-width:340px;background:linear-gradient(180deg,var(--royal-hi),var(--royal-lo));
+    border:1.5px solid var(--gold-bright);border-radius:18px;padding:20px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.6);
+    animation:ddin .25s var(--ease);}
+  @keyframes ddin{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .dd-dialog .dd-title{font-family:'Anton';color:var(--gold-bright);font-size:1.4rem;letter-spacing:1px;margin-bottom:4px;}
+  .dd-dialog .dd-cat{font-size:.78rem;color:#cdd4ff;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+  .dd-dialog .wager-input{margin-bottom:16px;}
+  .dd-dialog .final-btns{margin-bottom:10px;}
+  .dd-cancel{background:none;border:none;color:var(--muted);font-family:'Oswald';font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;padding:6px;}
+</style>
+</head>
+<body>
+
+<!-- ===== SÉLECTEUR ===== -->
+<div class="selector" id="selector">
+  <div class="sel-head">
+    <h1 class="wordmark">GÉOPARDIE<span>Compagnon · Pop Culture</span></h1>
+    <p class="sel-sub">Saison 1 · Knockout Games. Choisis l'épisode que tu regardes, puis suis ton pointage.</p>
+  </div>
+  <div class="ep-grid" id="epGrid"></div>
+  <p class="hint" style="margin-top:16px;">Les épisodes <b>partiels</b> n'ont que quelques catégories pré-remplies — tu complètes le reste en regardant (touche un en-tête pour l'éditer).</p>
+</div>
+
+<!-- ===== JEU ===== -->
+<div class="game" id="game">
+  <div class="topbar">
+    <div class="ep-pill" id="epPill">
+      <span class="lbl">Épisode — toucher pour changer</span>
+      <span class="val" id="epPillVal">—</span>
+    </div>
+    <button class="icon-btn" id="muteBtn" title="Sons" aria-label="Sons">🔊</button>
+  </div>
+
+  <div class="score-card" id="scoreCard">
+    <div class="score-label">Mon score</div>
+    <div class="score-value" id="scoreValue">$0</div>
+  </div>
+
+  <div class="rounds">
+    <button class="round-btn active" data-round="simple">Simple</button>
+    <button class="round-btn" data-round="double">Double</button>
+    <button class="round-btn" data-round="final">Finale</button>
+  </div>
+
+  <div class="banner" id="partialBanner" style="display:none;">
+    ⚠️ Catégories partielles : pré-remplies depuis le résumé Prime (réparties au mieux entre les manches). Ajuste-les en regardant.
+  </div>
+
+  <div id="boardWrap"></div>
+
+  <div class="reveal-wrap" id="revealWrap">
+    <button class="reveal-btn" id="revealBtn">🏆 Révéler le vrai résultat (spoiler)</button>
+    <div class="reveal-content" id="revealContent"></div>
+  </div>
+
+  <div class="actions">
+    <button class="action-btn" id="undoBtn" disabled>↩ Annuler</button>
+    <button class="action-btn danger" id="resetBtn">⟳ Recommencer</button>
+  </div>
+
+  <p class="hint">
+    <b>1 tape</b> = bonne réponse &nbsp;·&nbsp; <b>2 tapes</b> = mauvaise réponse<br>
+    <b>Appui long</b> sur une case = Daily Double (entre ta mise)<br>
+    Touche une case résolue pour l'annuler · le Triple Play se traite comme une case normale
+  </p>
+</div>
+
+<!-- ===== OVERLAY DAILY DOUBLE ===== -->
+<div class="dd-overlay" id="ddOverlay">
+  <div class="dd-dialog">
+    <div class="dd-title">DAILY DOUBLE</div>
+    <div class="dd-cat" id="ddCat">—</div>
+    <input class="wager-input" id="ddWager" type="number" min="0" step="100" placeholder="Ma mise">
+    <div class="final-btns">
+      <button class="final-btn good" id="ddGood">Réussi</button>
+      <button class="final-btn bad" id="ddBad">Raté</button>
+    </div>
+    <button class="dd-cancel" id="ddCancel">Annuler</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ DONNÉES ÉPISODES (Saison 1 — Knockout) ============
+     simple/double : 6 catégories par manche ("" = inconnue, à compléter).
+     complete:true  => 12 catégories vérifiées (source JBoard).
+     result : résultat réel pour comparaison (caché jusqu'à révélation). */
+  const E = [
+    {n:1,title:"Knockout Game 1",date:"4 déc 2024",complete:true,
+      simple:["JOHNNY GILBERT: FILM THESPIAN","THAT’S NOT MY NAME","SAD GIRL SUMMER","FAMOUS BECAUSE THE INTERNET","IT’S TIME FOR CARTOONS!","THE HAIR UP THERE"],
+      double:["HOT FOR TEACHER","MET GALA MOMENTS","NAME’S THE SAME","SOUNDTRACK HITS","WAITS","& MEASURES"],
+      final:"SPORTS ENDORSEMENTS",
+      teams:["Pop Queens","Oops! We Guessed It Again","Queen City Kidz"],
+      result:{winner:"Queen City Kidz", lines:["Scores finaux — Queen City Kidz 18 600, Oops! We Guessed It Again 16 799, Pop Queens 4 600.","Première partie de la saison : les Canadiens de Regina, seuls corrects en Finale, filent en quarts."]}},
+    {n:2,title:"Knockout Game 2",date:"4 déc 2024",complete:true,
+      simple:["I CAN DO 2 THINGS!","NIFTY FIFTY","REALITY STARS","FRIENDS","ROMANS","COUNTRY MEN & WOMEN"],
+      double:["BACK IN 2019","BOOKS BY RAPPERS","IT'S ALL RELATIVE","A POP QUIZ IN MATH","TV SWAN SONGS","I'M SUFFERING FROM DYSTOPIA"],
+      final:"PHRASE ORIGINS",
+      teams:["Little Pocket Monsters","Tinker Tailor Quiz Show Guys","All That Jazz"],
+      result:{winner:"Little Pocket Monsters", lines:["Scores finaux — Little Pocket Monsters 27 601, Tinker Tailor Quiz Show Guys 23 800, All That Jazz 0.","Little Pocket Monsters et Tinker Tailor réussissent la Finale ; les Monsters filent en quarts."]}},
+    {n:3,title:"Knockout Game 3",date:"4 déc 2024",complete:true,
+      simple:["WE'RE GOING TO BROADWAY!","FINISH THE RAP LYRIC","MY MOVIE WITH MERYL STREEP","TIKTOK","ON THE CLOCK","BUT THE PARTY DON'T STOP"],
+      double:["HAUTE DOGS","HISTORY ON TV","FASHION COLLABS","3-LETTER RESPONSES","FICTIONAL BRANDS","NUMERICAL LYRICS"],
+      final:"ACTING DIRECTORS",
+      teams:["Punny Goddesses","Personality Hires","Esprit Top 3"],
+      result:{winner:"Personality Hires", lines:["Scores finaux — Personality Hires 30 461, Punny Goddesses 4 800, Esprit Top 3 0.","Finale ratée par les trois équipes (Triple Stumper) ; Personality Hires gagne en runaway."]}},
+    {n:4,title:"Knockout Game 4",date:"11 déc 2024",complete:true,
+      simple:["VIDEO GAMES","ON SNL'S CELEBRITY JEOPARDY","PLAYING ALL OF TODAY'S HITS","MEET THE GRAHAMS","FAMILY MATTERS","“U”PHORIA"],
+      double:["ALBUM 1, TRACK 1, LINE 1","2 LITTLE WORDS","THE MOVIE'S HOLIDAY GREETING CARD","THE 1970s","SECURE THE BAG","BIG CHARLES DICKENS ENERGY"],
+      final:"MULTI-HYPHENATES",
+      teams:["Generation XYZ","South Shore Squad","It's A She Thing"],
+      result:{winner:"South Shore Squad", lines:["Scores finaux — South Shore Squad 24 001, It's A She Thing 3 399, Generation XYZ 8.","Seule South Shore Squad réussit la Finale ; elle file en quarts."]}},
+    {n:5,title:"Knockout Game 5",date:"11 déc 2024",complete:true,
+      simple:["A PERSONAL PODCAST","DOUBLE TALK","SISTER ACTS","MISHEARD SONG LYRICS","A MARVEL-OUS CATEGORY","THIS IS B.S."],
+      double:["FLORAL FILMS","SHOE-POURRI","FINE YOUNG CANNIBALS","BEFORE & AFTER MEMES","HOW LONG?","ONE-SEASON WONDERS"],
+      final:"REALITY TV HOSTS",
+      teams:["The Stage Names","Sidekicks","What Is…South Dakota"],
+      result:{winner:"The Stage Names", lines:["Avant la Finale : The Stage Names 22 200 (runaway), What Is…South Dakota 6 000, Sidekicks 3 200.","Les trois réussissent la Finale ; The Stage Names l'emporte."]}},
+    {n:6,title:"Knockout Game 6",date:"11 déc 2024",complete:true,
+      simple:["A VERY SPECIAL GUEST STAR","MYSTERIES & WHODUNITS","MADONNARAMA","THEY TURNED UP AT COMIC-CON","ADVICE, FWIW","CALL THE EXTERMINATOR!"],
+      double:["LATIN CLASS","IT'S ALL BUSINESS","CAMP CLASSICS","SO CURRENT IT HASN'T HAPPENED YET","POP POTENT POTABLES","WELCOME TO JEOPARDY!"],
+      final:"TV SHOW LOCATIONS",
+      teams:["Sparkle Stop Motion","The Legg Ladies","Beauty and the Beasts"],
+      result:{winner:"Beauty and the Beasts", lines:["Avant la Finale : Beauty and the Beasts 10 800 et Sparkle Stop Motion 10 800 (égalité), The Legg Ladies 7 600.","Seule Beauty and the Beasts réussit la Finale ; scores finaux 15 800 / 4 397 / 0."]}},
+    {n:7,title:"Knockout Game 7",date:"18 déc 2024",complete:true,
+      simple:["IN-LAWS","YOU, ROBOT","NICKNAMES & ALIASES","MOVIES MAKE THE FASHION","BASS","TV “M-A”"],
+      double:["ANNIVERSARIES","MARY BLANK BLANK","PITCHFORK PERFECT 10 ALBUMS","NOTABLE NOSHES","MEMORABLE TV MOMENTS","“SAY” YOU, “SAY” ME"],
+      final:"2010s MOVIE REVIEWS",
+      teams:["On The Bubble","Lower Shoulder","Space Cowboys"],
+      result:{winner:"On The Bubble", lines:["Scores finaux — On The Bubble 27 200, Lower Shoulder 10 399, Space Cowboys 782.","On The Bubble seule réussit la Finale et file en quarts."]}},
+    {n:8,title:"Knockout Game 8",date:"18 déc 2024",complete:true,
+      simple:["KEEPING UP WITH THE KARDASHIANS & JENNERS","DYNAMIC DUOS","DON'T CALL THEM NEPO BABIES!","HERR DOKTOR BRAUN'S THOUGHTS ON MOVIE SCIENCE","IT WAS ALL A DREAM","I USED TO READ WORD UP! MAGAZINE"],
+      double:["FUNNY PEOPLE","FICTIONAL BANDS","VOICE ACTING","BIG-SCREEN DEDICATIONS","TV THEME SONGS","THE VMA FOR VIDEO OF THE YEAR"],
+      final:"NO. 1 HIT SONGS",
+      teams:["Mission: Impopsicle","Set & A Run","Mojo Casa Housemates"],
+      result:{winner:"Mission: Impopsicle", lines:["Scores finaux — Mission: Impopsicle 46 800, Mojo Casa Housemates 5 599, Set & A Run 800.","Une des performances les plus dominantes du jeu ; Mission: Impopsicle file en quarts."]}},
+    {n:9,title:"Knockout Game 9",date:"18 déc 2024",complete:true,
+      simple:["MAID FOR TV","THE TONY AWARDS","WALTER EGOS","JOCK OF ALL TRADES","____ & ____","METAL FEST"],
+      double:["FRONTMEN","VIDEO GAME TO FILM","CALENDAR GIRLS","TV SHOW CHANGE A LETTER","GREAT BRITS","CELEBRITY MAKEUP"],
+      final:"ALPHANUMERIC COMPANY NAMES",
+      teams:["Brennith","Glazed and Confused","Tampa Tamales"],
+      result:{winner:"Glazed and Confused", lines:["Scores finaux — Glazed and Confused 34 401, Tampa Tamales 34 400, Brennith 1.","Victoire par 1 point grâce à une mise de couverture parfaite ; Glazed and Confused file en quarts."]}},
+    {n:10,title:"Knockout Game 10",date:"25 déc 2024",complete:true,
+      simple:["MOVIES BY THE NUMBERS","GAMES PEOPLE PLAY","FROM DISNEY TO A-LIST","IN FASHION","TV SIDEKICKS","FUN WITH GENRE ANAGRAMS"],
+      double:["COMPETITION SHOW LOSERS","STUFF CELEBRITIES SAY","FRUIT FLAVORS","TOURISM FOR FILM BUFFS","GIRL GROUPS","JOIN THE CLUB"],
+      final:"MOVIE TAGLINES",
+      teams:["Pasta La Vista","Andy Dick Tracy Morgan Freeman","The Bay Hive"],
+      result:{winner:"The Bay Hive", lines:["Scores finaux — The Bay Hive 28 200, Pasta La Vista 23 201, Andy Dick Tracy Morgan Freeman 10 000.","Les trois réussissent la Finale ; The Bay Hive l'emporte et file en quarts."]}},
+    {n:11,title:"Knockout Game 11",date:"25 déc 2024",complete:true,
+      simple:["CELEBS ON INSTA","NARRATORS","ATHLETE CAMEOS","SO HELP ME, POD","TV BY EPISODE TITLES","THE \u201CC.W.\u201D"],
+      double:["REDHEADS","NAME THE L.A. MUSICIAN","MODERN HEROINES","COME TO BRAZIL","NEW GLASSES","BETTER 1, BETTER 2?"],
+      final:"2020s TV",
+      teams:["Triple D Dragons","For Queso the cat","The Last Resort"],
+      result:{winner:"For Queso the cat", lines:["Queso et The Last Resort au coude à coude avant la Finale (~20 800 / 21 200).","Queso répond juste et mise tout — l'emporte."]}},
+    {n:12,title:"Knockout Game 12",date:"25 déc 2024",complete:true,
+      simple:["COUPLE PORTMANTEAUS","GAME SHOW REVIVALS","JUKEBOX MUSICALS","TAYLOR MADE","PATENT PETTABLES","WHOOPI-KIY-YAY!"],
+      double:["CLASSIC MOVIE ENDINGS","A SAMPLER","BRING OUT YOUR UNDEAD","STARS SELLING STUFF","RED","BOTTOMS"],
+      final:"RAP ALBUMS",
+      teams:["Running Up That Chili","The Anibrainiacs","Cozy Trivia Crew"],
+      result:{winner:"Running Up That Chili", lines:["Scores finaux — Running Up That Chili 20 401, The Anibrainiacs 17 998, Cozy Trivia Crew 4 000.","Runaway : Running Up That Chili ne risque rien en Finale et file en quarts."]}},
+    {n:13,title:"Knockout Game 13",date:"1 jan 2025",complete:true,
+      simple:["I'M JUDGING YOU","BEHIND: THE MUSIC","\u201CSTUPID\u201D ANSWERS","ONE-LINERS","BOOK TO MOVIE","YOU'VE HIT THE JACKPOT"],
+      double:["FILM DEBUTS","BOLD-FASHIONED","PLANES, TRAINS & AUTOMOBILES","COMEDIANS","I LOVE THE '80s","THE MISSING MEMBER"],
+      final:"SONG TITLE INSPIRATIONS",
+      teams:["Twisted Misters","Karen's Last Ziti","The Trebekkies"],
+      result:{winner:"Twisted Misters", lines:["Karen's Last Ziti menait après la manche simple (7 000).","Twisted Misters prend le contrôle en Double et verrouille la partie."]}},
+    {n:14,title:"Knockout Game 14",date:"1 jan 2025",complete:true,
+      simple:["EARLY ROLES ON SOAP OPERAS","SIP THIS SONG","ACTING ATHLETES","WEAPON OF CHOICE","HALLYU? HELL YEAH!","TIKTOK DANCES"],
+      double:["POSSESSIVE MOVIE TITLES","THE SONG THAT WAS PLAYING WHEN","WE'RE IN FOR SOME WEATHER","WINNING BIDS","SAY THE MAGIC WORDS","BET YOU FORGOT THEY DATED"],
+      final:"GEOGRAPHY LESSON",
+      teams:["Only Winners In The Building","The Recruits","The Latchkey 3"],
+      result:{winner:"Only Winners In The Building", lines:["Scores finaux — Only Winners In The Building 36 801, The Recruits 28 800, The Latchkey 3 4 000.","Les trois réussissent la Finale ; Only Winners In The Building file en quarts."]}},
+    {n:15,title:"Knockout Game 15",date:"1 jan 2025",complete:true,
+      simple:["I WROTE A CHILDREN'S BOOK","OBSERVE THIS","THEY WERE IN A MUSIC VIDEO?","SITCOMEDY TONIGHT","LOOKING FOR A MAN IN FINANCE","THE MOVIE TITLE CHARACTER WHO"],
+      double:["WELCOME TO EARTH","EDUCATIONAL TELEVISION","MOMMIE DEAREST","MODEL PERFORMANCES","90S MUSIC","HOW I GOT MY EGOT"],
+      final:"AT THE MOVIES",
+      teams:["The Eh-Team","Married With A Third Wheel","Scruffy Duffy's"],
+      result:{winner:"Married With A Third Wheel", lines:["Scores finaux — Married With A Third Wheel 22 200, Scruffy Duffy's 0, The Eh-Team 0.","Runaway : seul Married With A Third Wheel reste positif en Finale et file en quarts."]}},
+    {n:16,title:"Knockout Game 16",date:"8 jan 2025",complete:true,
+      simple:["SUMMER BLOCKBUSTERS","A DOSE OF REALITY","THE COZY GAMER","POP CULTURE PORTMANTEAUS","IT'S A PROJECT","OH YES, THERE WILL BE FOOTBALL"],
+      double:["LET'S WORK IT OUT ON THE REMIX","ACTING POLITICIANS","RHYMING TITLES","ANTI-HERO","KARMA","MIDNIGHTS"],
+      final:"THE MOVIE’S SOUNDTRACK",
+      teams:["‘Nother Scorcher","Sears Siblings","40 Years Late For Detention"],
+      result:{winner:"‘Nother Scorcher", lines:["Scores finaux — ‘Nother Scorcher 27 601, Sears Siblings 21 601, 40 Years Late For Detention 1 599.","Les trois réussissent la Finale ; ‘Nother Scorcher file en quarts."]}},
+    {n:17,title:"Knockout Game 17",date:"8 jan 2025",complete:true,
+      simple:["SMALL SCREEN AKA","THE 2024 BET AWARDS","3-LETTER WORDS","THIRST TRAPS","YOU SAID WHAT NOW?","AXE MEN"],
+      double:["FICTIONAL TOWNS","YOU AUGHTS-TA KNOW","MOVIE LINES","CONTENT CREATORS","ANIMATION APPRECIATION","AXE WOMEN"],
+      final:"HOLLYWOOD FAMILIES",
+      teams:["Let ‘er Hrip","Lena’s Legends","O’Trivia Rodrigo"],
+      result:{winner:"O’Trivia Rodrigo", lines:["Scores finaux — O’Trivia Rodrigo 15 201, Lena’s Legends 15 200, Let ‘er Hrip 0.","Encore une victoire par 1 point ; O’Trivia Rodrigo file en quarts."]}},
+    {n:18,title:"Knockout Game 18",date:"8 jan 2025",complete:true,
+      simple:["LA LA LAND","SONGS FROM BROADWAY MUSICALS","THE LONDON SCENE","DISNEY PRINCESSES IN THERAPY","OUT OF THE FRYING PAN","INTO THE FIRE"],
+      double:["4-LETTER ALBUM TITLES","A QUICK “HOW TO”","BIBLICAL NAMES","THE ORIGIN OF THE MEME","THE OL’ COLLEGE TRY","BUT I’M A CHEERLEADER"],
+      final:"THE RAZZIES",
+      teams:["In Our Jeopardy! Era","Together We’re T.I.M.","Team Shenanigans"],
+      result:{winner:"In Our Jeopardy! Era", lines:["Scores finaux — In Our Jeopardy! Era 25 601, Together We’re T.I.M. 25 600, Team Shenanigans 11 200.","Encore une victoire par 1 point ; In Our Jeopardy! Era file en quarts."]}},
+    {n:19,title:"Knockout Game 19",date:"15 jan 2025",complete:true,
+      simple:["DATING, BUT ON TV","SEND DUDES","HERE’S THE DRILL","DIY COSPLAY","TAG TEAM","BACK AGAIN"],
+      double:["ACCEPTANCE SPEECH SPEAKERS","THE BABY OF THE FAMILY","A-RAVIN’ IN THE SUN","CONCERT FILMS","FROM SCREEN TO STAGE","MOVIE QUOTES DONE LOW-KEY"],
+      final:"LONG-RUNNING SERIES",
+      teams:["The Three Seasons","A Tribe Called Quiz","Ladies of the 80s"],
+      result:{winner:"A Tribe Called Quiz", lines:["Scores finaux — A Tribe Called Quiz 16 000, The Three Seasons 11 500, Ladies of the 80s 0.","A Tribe Called Quiz, seul correct en Finale, file en quarts."]}},
+    {n:20,title:"Knockout Game 20",date:"15 jan 2025",complete:true,
+      simple:["THEY WERE WE ARE THE WORLD","FILM SERIES","SECRETLY SHAKESPEARE","POP! GO THE GILMORE GIRLS","RHYME TIME","MARRY ME"],
+      double:["THE SHOW’S OPENING CREDITS","A LITTLE BIT COUNTRY","A CATEGORY ABOUT NOTHING","SLAP SHOTS","CORPORATE CELEBS","THE SONG THAT ENDS THE MOVIE"],
+      final:"SONG TITLES",
+      teams:["Trivia Tuesdays","The Challengers","The Quiztina Aguileras"],
+      result:{winner:"Trivia Tuesdays", lines:["Scores finaux — Trivia Tuesdays 20 000, The Challengers 100, The Quiztina Aguileras 1.","Runaway : Trivia Tuesdays conclut en beauté et file en quarts."]}}
+  ];
+
+  const VALUES={simple:[200,400,600,800,1000],double:[400,800,1200,1600,2000]};
+  const COLS=6,ROWS=5,TAP_WINDOW=260,LONGPRESS=480;
+
+  // état
+  let ep=null, round="simple", score=0, displayed=0, muted=false, revealed=false;
+  let cats={simple:[],double:[],final:""};
+  let board={simple:null,double:null};
+  let finalState={wager:0,result:null};
+  const pending={}; const history=[];
+  let ddTarget=null; // {c,r} pour l'overlay DD
+
+  // ---------- Audio ----------
+  let actx=null;
+  function ctx(){ if(!actx){ try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return actx; }
+  function tone(freqs,dur,type,peak){ if(muted)return; const c=ctx(); if(!c)return; const t0=c.currentTime;
+    freqs.forEach((f,i)=>{ const o=c.createOscillator(),g=c.createGain(),lp=c.createBiquadFilter();
+      lp.type="lowpass";lp.frequency.value=2600;o.type=type;const s=t0+i*0.07;o.frequency.setValueAtTime(f,s);
+      g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(peak,s+0.012);g.gain.exponentialRampToValueAtTime(0.0008,s+dur);
+      o.connect(lp);lp.connect(g);g.connect(c.destination);o.start(s);o.stop(s+dur+0.05);}); }
+  const sfxWin=()=>tone([660,990],0.13,"triangle",0.06), sfxLoss=()=>tone([200,130],0.18,"sawtooth",0.05),
+        sfxReset=()=>tone([520],0.06,"sine",0.04), sfxDD=()=>tone([520,780,1040],0.12,"triangle",0.05);
+
+  // ---------- Sélecteur ----------
+  const selector=document.getElementById("selector"), gameEl=document.getElementById("game"), epGrid=document.getElementById("epGrid");
+  function buildSelector(){
+    epGrid.innerHTML="";
+    E.forEach((e,i)=>{
+      const card=document.createElement("button"); card.className="ep-card";
+      const feat=e.simple.filter(Boolean).slice(0,3).join(" · ");
+      card.innerHTML=
+        '<div class="ep-top"><span class="ep-num">'+e.n+'<small>'+e.date+'</small></span>'+
+        '<span class="ep-badge '+(e.complete?"full":"part")+'">'+(e.complete?"✓ complet":"partiel")+'</span></div>'+
+        '<div class="ep-cats">'+feat+'…</div>';
+      card.addEventListener("click",()=>loadEpisode(i));
+      epGrid.appendChild(card);
+    });
+  }
+
+  function loadEpisode(i){
+    ep=E[i]; round="simple"; score=0; displayed=0; revealed=false;
+    cats={simple:[...ep.simple],double:[...ep.double],final:ep.final||""};
+    board={simple:Array.from({length:COLS},()=>Array(ROWS).fill(null)),double:Array.from({length:COLS},()=>Array(ROWS).fill(null))};
+    finalState={wager:0,result:null}; history.length=0;
+    document.getElementById("undoBtn").disabled=true;
+    document.getElementById("scoreValue").textContent="$0"; document.getElementById("scoreValue").classList.remove("neg");
+    document.getElementById("epPillVal").textContent="#"+ep.n+" — "+ep.title;
+    document.getElementById("partialBanner").style.display=ep.complete?"none":"block";
+    // résultat / révélation
+    revealed=false; document.getElementById("revealContent").style.display="none";
+    const rb=document.getElementById("revealBtn");
+    rb.textContent= ep.result ? "🏆 Révéler le vrai résultat (spoiler)" : "🏆 Résultat non disponible pour cet épisode";
+    rb.disabled=!ep.result; rb.style.opacity=ep.result?"1":".5";
+    document.querySelectorAll(".round-btn").forEach(x=>x.classList.toggle("active",x.dataset.round==="simple"));
+    selector.style.display="none"; gameEl.style.display="block";
+    window.scrollTo(0,0); renderBoard();
+  }
+  function showSelector(){ gameEl.style.display="none"; selector.style.display="block"; window.scrollTo(0,0); }
+
+  // ---------- Score ----------
+  const $score=document.getElementById("scoreValue"), $card=document.getElementById("scoreCard");
+  const fmt=n=>(n<0?"-":"")+"$"+Math.abs(n).toLocaleString("fr-CA");
+  function animateScore(to){ const from=displayed; if(from===to)return; const dur=380,t0=performance.now();
+    $score.classList.toggle("neg",to<0);
+    requestAnimationFrame(function step(now){ const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3),v=Math.round(from+(to-from)*e);
+      $score.textContent=fmt(v); if(p<1)requestAnimationFrame(step); else{displayed=to;$score.textContent=fmt(to);} }); }
+  function flash(k){ $card.classList.remove("flash-win","flash-loss"); void $card.offsetWidth; $card.classList.add(k==="won"?"flash-win":"flash-loss"); }
+
+  // ---------- Historique ----------
+  const $undo=document.getElementById("undoBtn");
+  function pushHist(e){ history.push(e); $undo.disabled=false; }
+  function undo(){ const e=history.pop(); if(!e)return;
+    if(e.kind==="grid"){ board[e.round][e.c][e.r]=e.prev; score-=e.delta; if(e.round===round)renderBoard(); }
+    else if(e.kind==="final"){ finalState.result=e.prevResult; score-=e.delta; if(round==="final")renderBoard(); }
+    animateScore(score); $undo.disabled=history.length===0; sfxReset(); }
+
+  // ---------- Cases ----------
+  function commit(c,r,outcome,customDelta){
+    const delta = customDelta!=null ? customDelta : (outcome==="won"?VALUES[round][r]:-VALUES[round][r]);
+    score+=delta; board[round][c][r]= customDelta!=null ? (outcome+"|"+Math.abs(delta)) : outcome;
+    pushHist({kind:"grid",round,c,r,prev:null,delta}); paintCell(c,r,true); animateScore(score); flash(outcome.indexOf("won")===0?"won":"lost");
+    (outcome.indexOf("won")===0)?sfxWin():sfxLoss();
+  }
+  function resetCell(c,r){ const prev=board[round][c][r]; if(!prev)return;
+    // retrouver le delta : si custom (won|123) on l'inverse, sinon valeur de case
+    let delta;
+    if(prev.indexOf("|")>-1){ const amt=parseInt(prev.split("|")[1],10); delta = prev.indexOf("won")===0 ? -amt : amt; }
+    else { const v=VALUES[round][r]; delta = prev==="won" ? -v : v; }
+    score+=delta; board[round][c][r]=null; pushHist({kind:"grid",round,c,r,prev,delta}); paintCell(c,r,false); animateScore(score); sfxReset();
+  }
+  function outcomeOf(st){ return st && st.indexOf("won")===0 ? "won" : (st?"lost":null); }
+
+  function onCellTap(c,r,el){
+    if(board[round][c][r]){ resetCell(c,r); return; }
+    const id=c+"-"+r;
+    if(pending[id]){ clearTimeout(pending[id]); delete pending[id]; el.classList.remove("pending"); commit(c,r,"lost"); }
+    else{ el.classList.add("pending"); pending[id]=setTimeout(()=>{ delete pending[id]; el.classList.remove("pending"); commit(c,r,"won"); },TAP_WINDOW); }
+  }
+
+  // ---------- Daily Double overlay ----------
+  const ddOverlay=document.getElementById("ddOverlay"), ddWager=document.getElementById("ddWager"), ddCat=document.getElementById("ddCat");
+  function openDD(c,r){
+    if(board[round][c][r]) return;
+    ddTarget={c,r}; ddWager.value=""; ddCat.textContent=(cats[round][c]||"Catégorie")+" — $"+VALUES[round][r];
+    ddOverlay.classList.add("open"); sfxDD(); setTimeout(()=>ddWager.focus(),60);
+  }
+  function closeDD(){ ddOverlay.classList.remove("open"); ddTarget=null; }
+  function ddAnswer(good){
+    if(!ddTarget)return; const {c,r}=ddTarget; const w=parseInt(ddWager.value,10)||0;
+    commit(c,r, good?"won":"lost", good?w:-w); closeDD();
+  }
+  document.getElementById("ddGood").addEventListener("click",()=>ddAnswer(true));
+  document.getElementById("ddBad").addEventListener("click",()=>ddAnswer(false));
+  document.getElementById("ddCancel").addEventListener("click",closeDD);
+  ddOverlay.addEventListener("click",e=>{ if(e.target===ddOverlay)closeDD(); });
+
+  // ---------- Rendu ----------
+  const wrap=document.getElementById("boardWrap");
+  function paintCell(c,r,anim){
+    const el=wrap.querySelector('.cell[data-c="'+c+'"][data-r="'+r+'"]'); if(!el)return;
+    const st=board[round][c][r], oc=outcomeOf(st); el.classList.remove("won","lost","pending");
+    let badge=el.querySelector(".badge"), amtEl=el.querySelector(".amt");
+    if(oc){ el.classList.add(oc);
+      if(!badge){ badge=document.createElement("span"); badge.className="badge"; el.appendChild(badge); }
+      badge.textContent= oc==="won"?"✓":"✗";
+      if(st.indexOf("|")>-1){ amtEl.textContent="$"+st.split("|")[1]; } // montant DD réel
+      if(anim){ el.classList.add("shake"); setTimeout(()=>el.classList.remove("shake"),420); }
+    } else { if(badge)badge.remove(); amtEl.textContent="$"+VALUES[round][r]; }
+  }
+  function renderBoard(){
+    wrap.innerHTML="";
+    if(round==="final"){ renderFinal(); return; }
+    const grid=document.createElement("div"); grid.className="board";
+    for(let c=0;c<COLS;c++){
+      const h=document.createElement("div"); h.className="cat-head"; h.contentEditable="true"; h.spellcheck=false;
+      h.textContent=cats[round][c]||""; h.dataset.c=c;
+      h.addEventListener("input",()=>{ cats[round][c]=h.textContent.trim(); });
+      h.addEventListener("keydown",ev=>{ if(ev.key==="Enter"){ev.preventDefault();h.blur();} });
+      grid.appendChild(h);
+    }
+    for(let r=0;r<ROWS;r++){ for(let c=0;c<COLS;c++){
+      const el=document.createElement("div"); el.className="cell"; el.dataset.c=c; el.dataset.r=r;
+      const amt=document.createElement("span"); amt.className="amt"; amt.textContent="$"+VALUES[round][r]; el.appendChild(amt);
+      // tap / double-tap
+      el.addEventListener("click",()=>{ if(el._lp){ el._lp=false; return; } onCellTap(c,r,el); });
+      // appui long => Daily Double
+      let t=null;
+      const start=()=>{ if(board[round][c][r])return; t=setTimeout(()=>{ el._lp=true; openDD(c,r); },LONGPRESS); };
+      const cancel=()=>{ if(t){clearTimeout(t);t=null;} };
+      el.addEventListener("pointerdown",start); el.addEventListener("pointerup",cancel);
+      el.addEventListener("pointerleave",cancel); el.addEventListener("pointercancel",cancel);
+      grid.appendChild(el);
+      const st=board[round][c][r], oc=outcomeOf(st);
+      if(oc){ el.classList.add(oc); const b=document.createElement("span"); b.className="badge"; b.textContent=oc==="won"?"✓":"✗"; el.appendChild(b);
+        if(st.indexOf("|")>-1)amt.textContent="$"+st.split("|")[1]; amt.style.opacity=".5"; }
+    }}
+    wrap.appendChild(grid);
+  }
+  function renderFinal(){
+    const p=document.createElement("div"); p.className="final-panel";
+    const cat=document.createElement("div"); cat.className="final-cat"; cat.contentEditable="true"; cat.spellcheck=false;
+    cat.textContent=cats.final||"JÉOPARDIE FINALE";
+    cat.addEventListener("input",()=>{cats.final=cat.textContent.trim();});
+    cat.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();cat.blur();}});
+    const row=document.createElement("div"); row.className="wager-row"; row.innerHTML='<label for="wg">Ma mise</label>';
+    const inp=document.createElement("input"); inp.className="wager-input"; inp.id="wg"; inp.type="number"; inp.min="0"; inp.step="100";
+    inp.value=finalState.wager||""; inp.placeholder="0"; inp.addEventListener("input",()=>{finalState.wager=parseInt(inp.value,10)||0;}); row.appendChild(inp);
+    const btns=document.createElement("div"); btns.className="final-btns";
+    const good=document.createElement("button"); good.className="final-btn good"; good.textContent="Bonne réponse";
+    const bad=document.createElement("button"); bad.className="final-btn bad"; bad.textContent="Mauvaise réponse";
+    const res=document.createElement("div"); res.className="final-result";
+    function lock(s){ good.disabled=true; bad.disabled=true; res.textContent= s==="good" ? "✓ +"+fmt(finalState.wager).replace("-","")+" — « Annuler » pour corriger" : "✗ "+fmt(-finalState.wager)+" — « Annuler » pour corriger"; }
+    function answer(s){ if(finalState.result)return; const w=finalState.wager||0,delta=s==="good"?w:-w; score+=delta; finalState.result=s;
+      pushHist({kind:"final",prevResult:null,delta}); animateScore(score); flash(s==="good"?"won":"lost"); (s==="good")?sfxWin():sfxLoss(); lock(s); }
+    good.addEventListener("click",()=>answer("good")); bad.addEventListener("click",()=>answer("bad"));
+    p.appendChild(cat); p.appendChild(row); p.appendChild(btns); btns.appendChild(good); btns.appendChild(bad); p.appendChild(res);
+    wrap.appendChild(p); if(finalState.result)lock(finalState.result);
+  }
+
+  // ---------- Révélation résultat ----------
+  document.getElementById("revealBtn").addEventListener("click",()=>{
+    if(!ep||!ep.result)return; const box=document.getElementById("revealContent");
+    if(!revealed){
+      revealed=true;
+      let html='<h4>Résultat réel — '+ep.title+'</h4>';
+      ep.result.lines.forEach(l=>{ html+='<div class="res-line">'+l+'</div>'; });
+      html+='<div class="res-line res-win">🏆 Équipe gagnante : '+ep.result.winner+'</div>';
+      html+='<div class="res-me">Ton score : <b>'+fmt(score)+'</b><br><span style="color:#98a2dc;font-size:.78rem;">(tu joues en solo — les équipes sont à 3, donc c\'est un repère, pas un match exact)</span></div>';
+      box.innerHTML=html; box.style.display="block";
+      document.getElementById("revealBtn").textContent="🏆 Masquer le résultat";
+    } else { revealed=false; box.style.display="none"; document.getElementById("revealBtn").textContent="🏆 Révéler le vrai résultat (spoiler)"; }
+  });
+
+  // ---------- Manches / actions ----------
+  document.querySelectorAll(".round-btn").forEach(b=>b.addEventListener("click",()=>{
+    document.querySelectorAll(".round-btn").forEach(x=>x.classList.remove("active")); b.classList.add("active"); round=b.dataset.round; renderBoard();
+  }));
+  document.getElementById("epPill").addEventListener("click",showSelector);
+  $undo.addEventListener("click",undo);
+  document.getElementById("resetBtn").addEventListener("click",()=>{
+    if(!confirm("Recommencer cet épisode ? Le score et les cases seront remis à zéro."))return;
+    if(ep) loadEpisode(E.indexOf(ep));
+  });
+  const $mute=document.getElementById("muteBtn");
+  $mute.addEventListener("click",()=>{ muted=!muted; $mute.textContent=muted?"🔇":"🔊"; if(!muted){ctx();sfxReset();} });
+
+  // ---------- Démarrage ----------
+  buildSelector();
+})();
+</script>
+</body>
+</html>
