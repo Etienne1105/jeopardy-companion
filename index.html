@@ -163,7 +163,10 @@
   @keyframes ddin{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
   .dd-dialog .dd-title{font-family:'Anton';color:var(--gold-bright);font-size:1.4rem;letter-spacing:1px;margin-bottom:4px;}
   .dd-dialog .dd-cat{font-size:.78rem;color:#cdd4ff;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
-  .dd-dialog .wager-input{margin-bottom:16px;}
+  .dd-dialog .wager-input{margin-bottom:8px;}
+  .dd-hint{font-size:.74rem;color:var(--muted);line-height:1.45;margin-bottom:14px;min-height:1em;}
+  .dd-hint b{color:var(--gold-bright);font-weight:600;}
+  .dd-hint .rule{color:#cdd4ff;}
   .dd-dialog .final-btns{margin-bottom:10px;}
   .dd-cancel{background:none;border:none;color:var(--muted);font-family:'Oswald';font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;padding:6px;}
 
@@ -245,7 +248,8 @@
   <div class="dd-dialog">
     <div class="dd-title">DAILY DOUBLE</div>
     <div class="dd-cat" id="ddCat">—</div>
-    <input class="wager-input" id="ddWager" type="number" min="0" step="100" placeholder="Ma mise">
+    <input class="wager-input" id="ddWager" type="number" min="0" step="100">
+    <div class="dd-hint" id="ddHint"></div>
     <div class="final-btns">
       <button class="final-btn good" id="ddGood">Réussi</button>
       <button class="final-btn bad" id="ddBad">Raté</button>
@@ -475,7 +479,7 @@
   let board={simple:null,double:null};
   let finalState={wager:0,result:null};
   const pending={}; const history=[];
-  let ddTarget=null; // {c,r} pour l'overlay DD
+  let ddTarget=null, ddMax=0; // overlay DD : {c,r} + mise max autorisée
 
   // ---------- Audio ----------
   let actx=null;
@@ -619,15 +623,31 @@
   }
 
   // ---------- Daily Double overlay ----------
-  const ddOverlay=document.getElementById("ddOverlay"), ddWager=document.getElementById("ddWager"), ddCat=document.getElementById("ddCat");
+  const ddOverlay=document.getElementById("ddOverlay"), ddWager=document.getElementById("ddWager"), ddCat=document.getElementById("ddCat"), ddHint=document.getElementById("ddHint");
   function openDD(c,r){
     if(board[round][c][r]) return;
     ddTarget={c,r}; ddWager.value=""; ddCat.textContent=(cats[round][c]||"Catégorie")+" — $"+VALUES[round][r];
+    // Règle officielle : mise max = max(score actuel, plus haute valeur de la manche : $1000 simple / $2000 double)
+    const floor=VALUES[round][ROWS-1];
+    ddMax=Math.max(score,floor);
+    ddWager.max=ddMax;
+    ddHint.replaceChildren();
+    ddHint.appendChild(document.createTextNode("Mise max : "));
+    const b=document.createElement("b"); b.textContent=fmt(ddMax); ddHint.appendChild(b);
+    if(score>floor){
+      ddHint.appendChild(document.createTextNode(" (ton score actuel)."));
+    } else {
+      ddHint.appendChild(document.createTextNode(". "));
+      const rule=document.createElement("span"); rule.className="rule";
+      rule.textContent="Ton score est bas, mais la règle officielle te laisse miser jusqu'à la plus haute valeur de la manche ("+fmt(floor)+").";
+      ddHint.appendChild(rule);
+    }
     ddOverlay.classList.add("open"); sfxDD(); setTimeout(()=>ddWager.focus(),60);
   }
   function closeDD(){ ddOverlay.classList.remove("open"); ddTarget=null; }
   function ddAnswer(good){
-    if(!ddTarget)return; const {c,r}=ddTarget; const w=parseInt(ddWager.value,10)||0;
+    if(!ddTarget)return; const {c,r}=ddTarget;
+    let w=parseInt(ddWager.value,10)||0; w=Math.max(0,Math.min(w,ddMax)); // bornage à la mise max officielle
     commit(c,r, good?"won":"lost", good?w:-w); closeDD();
   }
   document.getElementById("ddGood").addEventListener("click",()=>ddAnswer(true));
