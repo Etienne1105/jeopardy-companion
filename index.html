@@ -1058,6 +1058,7 @@
     statsEl.style.display   = name==="stats"    ? "block" : "none";
     if(name==="home") startHomeCanvas(); else stopHomeCanvas(); // RAF seulement à l'accueil
     if(name!=="game") sndStop("think"); // pas de musique de réflexion hors du jeu
+    if(name==="home"){ snd("theme",0.55); } else { sndStop("theme"); } // thème à l'arrivée à l'accueil (no-op si autoplay bloqué → amorcé au 1er geste)
     window.scrollTo(0,0);
   }
 
@@ -1277,6 +1278,11 @@
   document.getElementById("btnStats").addEventListener("click",()=>{ renderStats(); showScreen("stats"); });
 
   // ---------- Démarrage ----------
+  // Politique autoplay : au tout premier geste, lancer le thème SI on est (encore) à l'accueil.
+  // setTimeout(0) laisse le clic se résoudre d'abord — si le geste était « JOUER », on a quitté l'accueil → pas de blip.
+  (function(){ function u(){ document.removeEventListener("pointerdown",u,true);
+    setTimeout(function(){ if(homeEl.style.display!=="none") snd("theme",0.55); },0); }
+    document.addEventListener("pointerdown",u,true); })();
   initSnd(); updateHome(); showScreen("home");
 })();
 </script>
