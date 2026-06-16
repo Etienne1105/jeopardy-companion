@@ -839,7 +839,16 @@
       o.connect(lp);lp.connect(g);g.connect(c.destination);o.start(s);o.stop(s+dur+0.05);}); }
   const sfxWin=()=>tone([660,990],0.13,"triangle",0.06), sfxLoss=()=>tone([200,130],0.18,"sawtooth",0.05),
         sfxReset=()=>tone([520],0.06,"sine",0.04), sfxDD=()=>tone([520,780,1040],0.12,"triangle",0.05),
-        sfxNeutral=()=>tone([330],0.07,"sine",0.035);
+        sfxNeutral=()=>tone([330],0.07,"sine",0.035),
+        sfxClick=()=>tone([1046],0.032,"triangle",0.026); // tick d'engagement bref (C6), même caractère triangle que sfxWin/sfxDD
+  // Clic d'engagement délégué : UNIQUEMENT sur les surfaces de NAVIGATION (les boutons de jeu — cellules,
+  // réponses DD/finale — gardent leurs sons propres et ne sont pas dans la liste, donc zéro double-son).
+  // Sur l'événement "click" (pas "pointerdown") : ne se déclenche QUE sur un tap complété, jamais sur un
+  // scroll-drag d'une grille (.bulle/.tile vivent dans des listes qui défilent sur mobile). Capture = avant le handler de l'élément.
+  document.addEventListener("click",e=>{ if(muted)return;
+    const t=e.target.closest(".menu-btn,.crumb-back,.round-btn,.bulle,.ep-card,.tile,.pgbtn,#rulesOk,#wnOk,#ddTipOk,#sigDone,#sigClear");
+    if(t && !t.disabled) sfxClick();
+  },true);
 
   // ---------- Samples Jeopardy! embarqués (base64, injectés au build) — même garde-fou mute ----------
   // Tant que la valeur n'est pas une data-URI, initSnd l'ignore : le code reste valide avant injection.
@@ -1291,7 +1300,7 @@
   const STKEY="geopardie_stats_v1";
   function defaultStats(){ return {episodes:{}, streak:{current:0,best:0}, gamesPlayed:0, totalWon:0, bestEpisode:0,
     cellsWon:0, cellsLost:0, cellsPassed:0, ddTried:0, ddWon:0, coryatSum:0, coverageSum:0,
-    onboarded:false, signature:null, ddTipSeen:false, pseudo:null, bestCoryat:0, seenVersion:0}; }
+    onboarded:false, signature:null, ddTipSeen:false, pseudo:null, bestCoryat:0, seenVersion:0, streakRun:[]}; }
   // Object.assign : les defaults posent le plancher, les valeurs stockées écrasent par-dessus
   // → un ancien build (sans seenVersion/onboarded/streak…) hérite des nouveaux champs sans planter.
   let stats; try{ stats=Object.assign(defaultStats(), JSON.parse(localStorage.getItem(STKEY))||{}); }catch(e){ stats=defaultStats(); }
@@ -1393,8 +1402,16 @@
       stats.coryatSum+=g.coryat;
       if(g.coryat>(stats.bestCoryat||0)) stats.bestCoryat=g.coryat; // meilleur Coryat (tri du classement)
       stats.coverageSum += g.resolved/(COLS*ROWS*2);
-      if(tierRank(g.tier)>=tierRank("streak")){ stats.streak.current++; if(stats.streak.current>stats.streak.best) stats.streak.best=stats.streak.current; }
-      else stats.streak.current=0;
+      // Anti-farm : un épisode ne compte AU PLUS QU'UNE FOIS dans la série en cours (streakRun = clés déjà conquises).
+      if(!Array.isArray(stats.streakRun)) stats.streakRun=[];          // garde-fou anciens builds (merge shallow n'ajoute pas dans un objet imbriqué)
+      const conquered = stats.streakRun.includes(key);
+      if(tierRank(g.tier)>=tierRank("streak")){
+        if(!conquered){ stats.streakRun.push(key); stats.streak.current++; if(stats.streak.current>stats.streak.best) stats.streak.best=stats.streak.current; }
+        // déjà conquis → la série tient, pas de re-comptage (impossible de farmer en rejouant le même épisode)
+      } else if(!conquered){
+        stats.streakRun=[]; stats.streak.current=0;                    // un échec sur un épisode JAMAIS conquis casse la série
+        // rejouer un épisode déjà banké et échouer ne casse PAS la série (la conquête reste acquise)
+      }
     }
     saveStats();
     syncProfile(); // pousse les scores au classement (best-effort, n'attend pas, ne bloque jamais le jeu)
@@ -1432,17 +1449,17 @@
         dsub:"<b>"+stats.cellsWon+"</b> cases réussies · <b>"+stats.cellsLost+"</b> ratées sur la carrière.",frac:acc/100,capL:"0 %",capR:"100 %"},
       {c:"#ffd23f",k:"Coryat moyen",v:cor>=1000?(cor/1000).toFixed(1)+"k":String(cor),dt:"Coryat moyen",dbig:fmt(cor),
         dsub:"Score « pur » moyen par partie (hors paris des Daily Doubles et de la finale).",frac:cor/60000,capL:"$0",capR:"$60k (élite)"},
-      {c:"#22e58a",k:"Daily Doubles",v:ddp+"%",dt:"Daily Doubles",dbig:stats.ddWon+"/"+stats.ddTried,
+      {c:"#ff7ac8",k:"Daily Doubles",v:ddp+"%",dt:"Daily Doubles",dbig:stats.ddWon+"/"+stats.ddTried,
         dsub:"<b>"+ddp+"%</b> de réussite. Même Ken Jennings n'a pas tout réussi — vis l'adrénaline !",frac:ddp/100,capL:"0 %",capR:"100 %"},
-      {c:"#4a83ff",k:"Couverture",v:cov+"%",dt:"Couverture du plateau",dbig:cov+"%",
+      {c:"#4f7cff",k:"Couverture",v:cov+"%",dt:"Couverture du plateau",dbig:cov+"%",
         dsub:"Part des cases que tu résous en moyenne (sur 60 par épisode).",frac:cov/100,capL:"0 %",capR:"100 %"},
-      {c:"#ff9a3d",k:"Total carrière",v:kfmt(stats.totalWon),dt:"Course à Ken",dbig:fmt(stats.totalWon),
+      {c:"#f0b82e",k:"Total carrière",v:kfmt(stats.totalWon),dt:"Course à Ken",dbig:fmt(stats.totalWon),
         dsub:"Total amassé sur <b>"+stats.gamesPlayed+"</b> parties. Objectif ultime : les "+fmt(KEN_TOTAL)+" de Ken.",frac:stats.totalWon/KEN_TOTAL,capL:"$0",capR:"Ken : "+fmt(KEN_TOTAL)},
-      {c:"#ff5a4a",k:"Meilleur ép.",v:kfmt(stats.bestEpisode),dt:"vs Holzhauer",dbig:fmt(stats.bestEpisode),
+      {c:"#6df0ff",k:"Meilleur ép.",v:kfmt(stats.bestEpisode),dt:"vs Holzhauer",dbig:fmt(stats.bestEpisode),
         dsub:"Ton record sur un épisode. Le sommet : les "+fmt(HOLZ_BEST)+" de James Holzhauer.",frac:stats.bestEpisode/HOLZ_BEST,capL:"$0",capR:"Holzhauer : "+fmt(HOLZ_BEST)},
-      {c:"#a77bff",k:"Parties",v:String(stats.gamesPlayed),dt:"Parties jouées",dbig:String(stats.gamesPlayed),
+      {c:"#7da8ff",k:"Parties",v:String(stats.gamesPlayed),dt:"Parties jouées",dbig:String(stats.gamesPlayed),
         dsub:"Score moyen : <b>"+fmt(avg)+"</b> / partie. Plus tu joues, plus tes moyennes se stabilisent.",frac:Math.min(1,stats.gamesPlayed/50),capL:"0",capR:"50"},
-      {c:"#ffd23f",k:"Médailles",v:String(totMed),dt:"Médailles par épisode",dbig:"💎 "+m.perfect,
+      {c:"#ffe27a",k:"Médailles",v:String(totMed),dt:"Médailles par épisode",dbig:"💎 "+m.perfect,
         dsub:"<b>"+m["!"]+"</b> ! · <b>"+m["!!"]+"</b> !! · <b>"+m["!!!"]+"</b> !!! · <b>"+m.streak+"</b> streak · <b>"+m.perfect+"</b> PARFAIT",frac:(m.streak+m.perfect)/Math.max(1,stats.gamesPlayed),capL:"0",capR:"victoires propres"},
     ];
     function showDetail(bb,btn){
