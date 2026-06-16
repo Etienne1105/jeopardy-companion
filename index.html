@@ -190,7 +190,8 @@
   .cell.neutral .badge{color:#cdd4ff;font-weight:600;}
 
   /* ---------- Accueil (splash) — voir bloc PORT VISUEL ELITE plus bas pour le détail ---------- */
-  .home{display:none;align-items:center;justify-content:center;text-align:center;min-height:100dvh;padding:24px 16px;}
+  .home{display:none;align-items:center;justify-content:center;text-align:center;overflow:hidden;
+    padding:max(env(safe-area-inset-top),24px) 16px max(env(safe-area-inset-bottom),24px);}
 
   /* ---------- Panneaux Options / Stats ---------- */
   .panel{display:none;}
@@ -214,6 +215,14 @@
   .opt-reset{width:100%;border:1px solid rgba(216,49,59,.5);background:rgba(216,49,59,.14);color:#ffb4b4;font-family:'Oswald';font-weight:600;
     text-transform:uppercase;letter-spacing:.5px;font-size:.82rem;padding:12px;border-radius:11px;cursor:pointer;touch-action:manipulation;}
 
+  /* --- Pagination des pages de niveaux (boutons ‹ / ›) --- */
+  .pager{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:16px;}
+  .pgbtn{font-family:'Anton';font-size:1.5rem;color:#241a00;background:linear-gradient(180deg,var(--gold-bright),var(--gold));border:none;
+    border-radius:12px;width:56px;height:46px;cursor:pointer;box-shadow:0 4px 0 #9a7b14;display:flex;align-items:center;justify-content:center;line-height:1;touch-action:manipulation;transition:transform .1s var(--ease),box-shadow .1s;}
+  .pgbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #9a7b14;}
+  .pgbtn.off{opacity:.32;pointer-events:none;box-shadow:0 4px 0 #5a4a14;}
+  .pgind{font-family:'Oswald';font-weight:600;font-size:.92rem;color:#eafaff;letter-spacing:1px;min-width:104px;text-align:center;text-shadow:0 0 8px rgba(39,227,255,.5);}
+
   /* ---------- Médailles (échelle ! → PARFAIT) ---------- */
   .medal{font-family:'Anton';font-weight:400;letter-spacing:1px;flex:0 0 auto;padding:2px 8px;border-radius:8px;line-height:1.15;font-size:.95rem;}
   .medal.m1{color:var(--gold);} .medal.m2{color:var(--gold-bright);}
@@ -231,7 +240,8 @@
   body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.45;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");}
   body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.14;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.5) 2px 3px);}
-  #home,#selector,#game,#stats{position:relative;z-index:1;}
+  #selector,#game,#stats{position:relative;z-index:1;}
+  #home{position:fixed;inset:0;z-index:2;} /* accueil = overlay plein écran hors flux scrollable → pas de toolbar toggle iOS (« 2 positions ») */
 
   /* --- Bannière champion (streak façon Johnny Gilbert) --- */
   .champ{position:relative;display:flex;align-items:center;gap:12px;border-radius:14px;padding:13px 16px;overflow:hidden;margin-bottom:14px;
@@ -323,7 +333,7 @@
 
   /* --- Statistiques : tableau de bord à bulles néon (1 couleur par stat via --c) --- */
   .bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 8px;justify-items:center;margin-bottom:4px;}
-  .bulle{position:relative;width:clamp(82px,27vw,104px);aspect-ratio:1;border-radius:50%;cursor:pointer;display:flex;flex-direction:column;
+  .bulle{position:relative;width:clamp(82px,27vw,104px);aspect-ratio:1;border-radius:20px;cursor:pointer;display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;border:2px solid var(--c);color:#fff;
     background:radial-gradient(circle at 38% 30%, color-mix(in srgb,var(--c) 60%,#0a0e5e), #0a0e5e 76%);
     box-shadow:0 0 14px color-mix(in srgb,var(--c) 55%,transparent), inset 0 2px 10px rgba(255,255,255,.12), inset 0 -8px 16px rgba(0,0,0,.55);
@@ -333,7 +343,7 @@
   .bulle .v{font-family:'Anton';font-size:clamp(1.2rem,5.5vw,1.5rem);line-height:.95;text-shadow:0 0 9px var(--c);position:relative;z-index:1;}
   .bulle .k{font-size:.5rem;letter-spacing:.6px;text-transform:uppercase;color:#dfe7ff;margin-top:3px;font-weight:600;position:relative;z-index:1;padding:0 4px;line-height:1.1;}
   .bulle.sel{transform:scale(1.1);box-shadow:0 0 28px var(--c),0 0 8px var(--c),inset 0 2px 10px rgba(255,255,255,.15),inset 0 -8px 16px rgba(0,0,0,.5);}
-  .bulle.sel::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1.5px solid var(--c);opacity:.5;animation:bring 1.6s var(--ease) infinite;}
+  .bulle.sel::after{content:"";position:absolute;inset:-6px;border-radius:26px;border:1.5px solid var(--c);opacity:.5;animation:bring 1.6s var(--ease) infinite;}
   @keyframes bring{0%{transform:scale(1);opacity:.5;}100%{transform:scale(1.18);opacity:0;}}
   .bdetail{margin-top:20px;border-radius:16px;padding:16px 16px 18px;position:relative;overflow:hidden;
     background:linear-gradient(160deg,color-mix(in srgb,var(--c) 22%,#0c133f),#0a0e36);
@@ -687,7 +697,18 @@
   const selector=document.getElementById("selector"), gameEl=document.getElementById("game"),
         epGrid=document.getElementById("epGrid"), browseHead=document.getElementById("browseHead"),
         browseHint=document.getElementById("browseHint");
-  let view="iterations", curIter=null, curColl=null;
+  let view="iterations", curIter=null, curColl=null, epPage=0;
+  // nb de tuiles par page = ce qui tient dans l'écran (responsive) → zéro scroll
+  function tilesPerPage(){
+    const cols=3,padX=28,gap=13;
+    const cont=Math.min(window.innerWidth||390,760)-padX;
+    const tileW=(cont-(cols-1)*gap)/cols;
+    const tileRow=tileW+7+42; // tuile carrée + gap + pips
+    const reserved=52 + (stats.streak.current>0?86:0) + 62 + 18; // crumb + bannière + pager + marge
+    const avail=(window.innerHeight||760)-reserved;
+    const rows=Math.max(2, Math.floor((avail+gap)/(tileRow+gap))); // max de rangées qui tiennent (gap inclus)
+    return cols*rows;
+  }
 
   function el(tag,cls,txt){ const e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
 
@@ -746,6 +767,7 @@
 
   function renderBrowse(){
     epGrid.replaceChildren(); browseHead.replaceChildren(); browseHint.textContent="";
+    const oldPager=document.getElementById("epPager"); if(oldPager)oldPager.remove();
     epGrid.className = "ep-grid" + (view==="episodes" ? " tilegrid" : "");
     if(view==="iterations"){
       crumb("Accueil", goHome, "Choisis ton édition");
@@ -774,24 +796,39 @@
       const multi=curIter.collections.length>1;
       crumb(multi?curIter.name:"Éditions", multi?(()=>{view="collections";renderBrowse();}):(()=>{view="iterations";renderBrowse();}), curColl.name);
       renderChampBanner();
-      curColl.episodes.forEach((e,i)=>{
+      const eps=curColl.episodes, per=tilesPerPage(), pages=Math.max(1,Math.ceil(eps.length/per));
+      if(epPage>=pages)epPage=pages-1; if(epPage<0)epPage=0;
+      const start=epPage*per, end=Math.min(start+per,eps.length);
+      for(let i=start;i<end;i++){ const e=eps[i];
         const mt=stats.episodes[curIter.id+"/"+curColl.id+"/"+e.n];
         const lvl=el("div","level");
         const tile=el("button","tile"+(mt?" played":"")+(e.complete?"":" part-tile"));
         if(!e.complete) tile.appendChild(el("span","partflag","partiel"));
-        tile.appendChild(el("span","lvl",String(i+1)));
+        tile.appendChild(el("span","lvl",String(i+1))); // numéro de niveau GLOBAL (pas par page)
         tile.appendChild(el("span","tname",e.title));
         if(e.date) tile.appendChild(el("span","tdate",e.date));
         tile.addEventListener("click",()=>loadEpisode(e));
         lvl.appendChild(tile);
         const p=tierPips(mt); lvl.appendChild(pipsRow(p.n,p.perfect)); // médailles SOUS la tuile
         epGrid.appendChild(lvl);
-      });
-      browseHint.textContent="Touche un niveau pour ouvrir son plateau. Les "+"!"+" sous chaque tuile se remplissent selon ta précision.";
+      }
+      // boutons de changement de page (seulement si > 1 page)
+      if(pages>1){
+        const pager=el("div","pager"); pager.id="epPager";
+        const prev=el("button","pgbtn"+(epPage===0?" off":""),"‹");
+        const ind=el("span","pgind","Page "+(epPage+1)+" / "+pages);
+        const next=el("button","pgbtn"+(epPage===pages-1?" off":""),"›");
+        prev.addEventListener("click",()=>{ if(epPage>0){epPage--;renderBrowse();} });
+        next.addEventListener("click",()=>{ if(epPage<pages-1){epPage++;renderBrowse();} });
+        pager.appendChild(prev); pager.appendChild(ind); pager.appendChild(next);
+        epGrid.after(pager);
+      }
     }
   }
-  function pickIteration(it){ curIter=it; if(it.collections.length===1){ curColl=it.collections[0]; view="episodes"; } else { view="collections"; } renderBrowse(); }
-  function pickCollection(col){ if(!col.episodes.length)return; curColl=col; view="episodes"; renderBrowse(); }
+  function pickIteration(it){ curIter=it; epPage=0; if(it.collections.length===1){ curColl=it.collections[0]; view="episodes"; } else { view="collections"; } renderBrowse(); }
+  function pickCollection(col){ if(!col.episodes.length)return; curColl=col; epPage=0; view="episodes"; renderBrowse(); }
+  // re-paginer si l'écran change de taille (rotation) pendant qu'on est sur les niveaux → garde le « zéro scroll »
+  addEventListener("resize",()=>{ if(view==="episodes" && selector.style.display!=="none") renderBrowse(); });
 
   function loadEpisode(e){
     ep=e; round="simple"; score=0; displayed=0; revealed=false;
