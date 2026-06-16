@@ -11,6 +11,7 @@
   :root{
     --navy-deep:#05082b; --navy:#0a0e5e; --royal:#0b1fb5; --royal-hi:#1a31d8; --royal-lo:#081584;
     --gold:#e8b923; --gold-bright:#ffd23f; --won:#16a34a; --won-hi:#22c55e; --lost:#d8313b; --lost-hi:#ef4444;
+    --cyan:#27e3ff; --magenta:#ff3da6; /* accents Néon Pop (inspi Pop Culture Jeopardy!) — accents seulement, bleu+or restent le cœur */
     --text:#fff; --muted:#98a2dc; --ease:cubic-bezier(.2,.8,.25,1);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -100,7 +101,7 @@
     border:1px solid rgba(255,255,255,.10);border-top-color:rgba(255,255,255,.22);border-radius:7px;aspect-ratio:1/.82;
     display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Anton';
     font-size:clamp(.9rem,5.2vw,1.5rem);color:var(--gold);text-shadow:0 2px 0 rgba(0,0,0,.45);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 3px 8px rgba(0,0,0,.3);
+    box-shadow:inset 0 0 0 1px rgba(39,227,255,.16), inset 0 1px 0 rgba(255,255,255,.18), 0 3px 8px rgba(0,0,0,.3);
     transition:transform .1s var(--ease),background .25s,opacity .25s;touch-action:manipulation;user-select:none;overflow:hidden;}
   .cell:active{transform:scale(.93);}
   .cell.pending{animation:pulse .55s var(--ease) infinite alternate;}
@@ -178,7 +179,7 @@
   .crumb-back{flex:0 0 auto;border:1px solid rgba(152,162,220,.35);background:rgba(11,31,181,.35);color:var(--gold-bright);
     font-family:'Oswald';font-weight:600;font-size:.82rem;padding:9px 13px;border-radius:10px;cursor:pointer;touch-action:manipulation;}
   .crumb-back:active{transform:scale(.96);}
-  .crumb-title{font-family:'Anton';font-size:1.15rem;color:#fff;line-height:1.05;}
+  .crumb-title{font-family:'Anton';font-size:1.15rem;color:#eafaff;line-height:1.05;text-shadow:0 0 4px var(--cyan),0 0 12px rgba(39,227,255,.55);}
 
   /* ---------- Case « passée » (neutre) ---------- */
   .cell.neutral{background:linear-gradient(180deg,#2b3270,#1b2150);color:#aeb6e6;opacity:.6;}
@@ -192,7 +193,7 @@
   .panel{display:none;}
   .panel-card{background:linear-gradient(180deg,var(--royal-hi),var(--royal-lo));border:1px solid rgba(255,210,63,.25);
     border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 6px 20px rgba(0,0,0,.35);}
-  .panel-card h3{margin:0 0 10px;font-family:'Anton';font-weight:400;color:var(--gold-bright);font-size:1.05rem;letter-spacing:.5px;}
+  .panel-card h3{margin:0 0 10px;font-family:'Anton';font-weight:400;color:var(--gold-bright);font-size:1.05rem;letter-spacing:.5px;text-shadow:0 0 9px rgba(39,227,255,.4);}
   .stat-line{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(152,162,220,.15);}
   .stat-line:last-child{border-bottom:none;}
   .stat-line .k{color:#cdd4ff;font-size:.84rem;line-height:1.3;}
@@ -231,12 +232,13 @@
 
   /* --- Bannière champion (streak façon Johnny Gilbert) --- */
   .champ{position:relative;display:flex;align-items:center;gap:12px;border-radius:14px;padding:13px 16px;overflow:hidden;margin-bottom:14px;
-    background:linear-gradient(180deg,#13205e,#0a1244);border:1.5px solid var(--gold);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.12);}
+    background:linear-gradient(180deg,#1a1452,#120a3e);border:1.5px solid var(--magenta);
+    box-shadow:0 6px 20px rgba(0,0,0,.45),0 0 18px rgba(255,61,166,.35),inset 0 1px 0 rgba(255,255,255,.12);}
   .champ::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.25) 2px 3px);opacity:.4;pointer-events:none;}
-  .champ .cstar{font-size:1.5rem;color:var(--gold-bright);filter:drop-shadow(0 0 6px rgba(255,210,63,.6));z-index:1;}
+  .champ .cstar{font-size:1.5rem;color:var(--magenta);filter:drop-shadow(0 0 7px rgba(255,61,166,.9));z-index:1;}
   .champ .ctxt{z-index:1;line-height:1.25;flex:1;}
-  .champ .ctxt .lbl{font-family:'Oswald';font-weight:600;letter-spacing:2px;text-transform:uppercase;font-size:.62rem;color:var(--muted);}
-  .champ .ctxt .nm{font-family:'Anton';font-size:1.15rem;color:var(--gold-bright);letter-spacing:.5px;}
+  .champ .ctxt .lbl{font-family:'Oswald';font-weight:600;letter-spacing:2px;text-transform:uppercase;font-size:.62rem;color:#ff9bd0;}
+  .champ .ctxt .nm{font-family:'Anton';font-size:1.15rem;color:var(--gold-bright);letter-spacing:.5px;text-shadow:0 0 10px rgba(255,210,63,.5);}
   .champ .ctxt .desc{font-size:.74rem;color:#dfe4ff;font-style:italic;}
 
   /* --- Tuiles-niveaux (épisodes) --- */
@@ -296,7 +298,8 @@
     -webkit-background-clip:text;background-clip:text;background-size:300% 100%;animation:hsweep 4.2s linear infinite;}
   @keyframes hsweep{from{background-position:160% 0;}to{background-position:-60% 0;}}
   @keyframes hfloat{from{transform:skewX(-7deg) translateY(-5px);}to{transform:skewX(-7deg) translateY(5px);}}
-  .home .home-sub{margin-top:14px;color:var(--gold-bright);font-weight:600;letter-spacing:3px;text-transform:uppercase;font-size:.74rem;opacity:.9;}
+  .home .home-sub{margin-top:14px;color:#eafaff;font-weight:600;letter-spacing:3px;text-transform:uppercase;font-size:.74rem;
+    text-shadow:0 0 4px var(--cyan),0 0 12px rgba(39,227,255,.7);}
   .home .home-streak{color:var(--muted);font-size:.8rem;min-height:1.1em;margin:8px 0 0;}
   .home-menu{display:flex;flex-direction:column;gap:13px;width:100%;margin-top:34px;}
   .menu-btn{position:relative;overflow:hidden;font-family:'Anton';font-size:1.45rem;letter-spacing:1px;color:#241a00;
@@ -974,22 +977,33 @@
   function _resizeCanvas(){ if(!_cv)return; _cv.width=innerWidth*_dpr; _cv.height=innerHeight*_dpr; _cv.style.width=innerWidth+"px"; _cv.style.height=innerHeight+"px"; }
   function _rr(x,px,py,s,r){ x.beginPath();x.moveTo(px+r,py);x.arcTo(px+s,py,px+s,py+s,r);x.arcTo(px+s,py+s,px,py+s,r);x.arcTo(px,py+s,px,py,r);x.arcTo(px,py,px+s,py,r);x.closePath(); }
   function _homeFrame(){
-    const x=_cx,W=_cv.width,H=_cv.height; _ct+=.016; x.clearRect(0,0,W,H);
-    const g=x.createRadialGradient(W*.5,H*-.1,0,W*.5,H*-.1,H*1.2);
-    g.addColorStop(0,"#141a8a");g.addColorStop(.4,"#0a0e5e");g.addColorStop(1,"#05082b"); x.fillStyle=g;x.fillRect(0,0,W,H);
-    const lx=W*(.5+.32*Math.sin(_ct*.35)),ly=H*.22; const sl=x.createRadialGradient(lx,ly,0,lx,ly,H*.7);
-    sl.addColorStop(0,"rgba(120,150,255,.16)");sl.addColorStop(1,"transparent"); x.fillStyle=sl;x.fillRect(0,0,W,H);
-    for(const c of _cells){ c.y-=c.vy/H*_dpr*60*.016; c.x+=c.vx/W*_dpr*60*.016; if(c.y<-.1)c.y=1.1; if(c.x<-.1)c.x=1.1; if(c.x>1.1)c.x=-.1;
-      const px=c.x*W,py=c.y*H; x.fillStyle="rgba(40,70,210,"+c.a+")"; _rr(x,px,py,c.s,c.s*.18);x.fill();
-      x.strokeStyle="rgba(140,170,255,"+(c.a*.8)+")"; x.lineWidth=_dpr; _rr(x,px,py,c.s,c.s*.18);x.stroke(); }
-    for(const s of _sparks){ const a=.25+.55*(.5+.5*Math.sin(_ct*s.sp*2+s.ph)); x.fillStyle="rgba(255,220,90,"+a+")";
+    const x=_cx,W=_cv.width,H=_cv.height; _ct+=.016;
+    const cx=W*0.5, cy=H*0.34, R=Math.hypot(W,H)*1.15;
+    // base profonde
+    x.fillStyle="#0a1670"; x.fillRect(0,0,W,H);
+    // sunburst STATIQUE deux-tons (signature Pop Culture Jeopardy!)
+    const N=44, twoPi=6.2832;
+    for(let i=0;i<N;i++){ const a0=(i/N)*twoPi, a1=((i+1)/N)*twoPi;
+      x.fillStyle = (i%2) ? "#143fb8" : "#2a86ec";
+      x.beginPath(); x.moveTo(cx,cy); x.arc(cx,cy,R,a0,a1); x.closePath(); x.fill(); }
+    // 2 fines lignes accent (or + magenta) comme dans la ref
+    x.lineWidth=2*_dpr;
+    x.strokeStyle="rgba(255,210,63,.5)"; x.beginPath(); x.moveTo(cx,cy); x.lineTo(cx+R*Math.cos(0.35),cy+R*Math.sin(0.35)); x.stroke();
+    x.strokeStyle="rgba(255,61,166,.5)"; x.beginPath(); x.moveTo(cx,cy); x.lineTo(cx+R*Math.cos(3.5),cy+R*Math.sin(3.5)); x.stroke();
+    // halo central lumineux
+    const cg=x.createRadialGradient(cx,cy,0,cx,cy,H*0.55);
+    cg.addColorStop(0,"rgba(190,225,255,.5)"); cg.addColorStop(.45,"rgba(60,130,240,0)"); x.fillStyle=cg; x.fillRect(0,0,W,H);
+    // vignette (lisibilité + profondeur)
+    const vg=x.createRadialGradient(W*.5,H*.52,H*.22,W*.5,H*.52,H*.9);
+    vg.addColorStop(0,"rgba(5,8,40,0)"); vg.addColorStop(1,"rgba(3,5,25,.85)"); x.fillStyle=vg; x.fillRect(0,0,W,H);
+    // étincelles (vie subtile, scintillement)
+    for(const s of _sparks){ const a=.2+.5*(.5+.5*Math.sin(_ct*s.sp*2+s.ph)); x.fillStyle="rgba(255,242,190,"+a+")";
       x.beginPath();x.arc(s.x*W,s.y*H,s.r*(.7+.5*Math.sin(_ct*s.sp+s.ph)),0,6.2832);x.fill(); }
     _raf=requestAnimationFrame(_homeFrame);
   }
   function startHomeCanvas(){
     if(_raf)return; _cv=document.getElementById("bg"); if(!_cv)return; _cx=_cv.getContext("2d"); _resizeCanvas();
-    if(!_cells){ _cells=[]; for(let i=0;i<26;i++){ const d=Math.random(); _cells.push({x:Math.random(),y:Math.random(),s:(18+d*46)*_dpr,vy:(.10+d*.22),vx:(Math.random()-.5)*.06,a:.05+d*.10}); }
-      _sparks=[]; for(let i=0;i<46;i++) _sparks.push({x:Math.random(),y:Math.random(),r:(.6+Math.random()*1.6)*_dpr,ph:Math.random()*6.28,sp:.5+Math.random()}); }
+    if(!_sparks){ _sparks=[]; for(let i=0;i<38;i++) _sparks.push({x:Math.random(),y:Math.random(),r:(.6+Math.random()*1.6)*_dpr,ph:Math.random()*6.28,sp:.5+Math.random()}); }
     addEventListener("resize",_resizeCanvas); _raf=requestAnimationFrame(_homeFrame);
   }
   function stopHomeCanvas(){ if(_raf){ cancelAnimationFrame(_raf); _raf=null; } removeEventListener("resize",_resizeCanvas); }

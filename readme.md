@@ -1,21 +1,46 @@
-# Géopardie — Compagnon Jeopardy!
+# Jeopardy! — Compagnon de pointage
 
-Tableau de pointage compagnon pour suivre **ton** score en regardant Jeopardy!. Ce n'est pas un jeu de questions : c'est un *board* interactif qui reproduit la grille de l'émission pour que tu marques tes gains, tes pertes et les cases passées en temps réel, manche par manche.
+Tableau de pointage compagnon pour suivre **ton** score en regardant Jeopardy!. Ce n'est pas un jeu de questions : c'est un *board* interactif qui reproduit la grille de l'émission pour que tu marques tes gains, tes pertes et les cases passées en temps réel, manche par manche — et qui récompense tes performances avec des médailles et une streak.
 
 Couvre plusieurs éditions : **Pop Culture Jeopardy!** (Prime Video) et **Jeopardy! classique** (Crave / données J-Archive).
 
 ## Ce que ça fait
 
-- **Navigation à 3 niveaux** : Édition → Collection → Épisode.
+- **Navigation à 3 niveaux** : Édition → Collection → Épisode (présentés en tuiles-niveaux à la Donkey Kong Country / Candy Crush).
 - **89 épisodes jouables**, chacun avec ses 6 catégories Simple, ses 6 catégories Double, sa finale, ses participants et le résultat réel.
 - **Marquage d'une case** :
   - **1 clic** = réussie (+ la valeur)
   - **2 clics** = échec (− la valeur)
   - **clic long** = passée (ni gain ni perte — pour les cases jouées par d'autres à l'écran)
-- **Daily Doubles automatiques** : les positions réelles sont intégrées, donc cliquer une case Daily Double ouvre tout seul l'encart de mise (Réussi / Raté). Sur les épisodes non marqués (ex. Pop Culture), un **triple clic** déclenche un DD manuel — un bandeau te le rappelle.
+- **Daily Doubles automatiques** : les positions réelles sont intégrées, donc cliquer une case Daily Double ouvre tout seul l'encart de mise (Réussi / Raté), plafonnée à la mise max officielle. Sur les épisodes non marqués (ex. Pop Culture), un **triple clic** déclenche un DD manuel — un bandeau te le rappelle.
+- **Reveal en damier** : à l'ouverture d'une manche, les montants se remplissent colonne par colonne, comme à l'écran.
 - **Anti-spoiler** : le vrai résultat (scores + gagnant) reste caché derrière un bouton « Révéler le vrai résultat ». Les Daily Doubles ne sont pas révélés visuellement avant le clic.
 - **En-têtes éditables** : si une catégorie diffère à l'écran, touche l'en-tête pour la corriger.
 - Effets sonores Web Audio (bouton mute), animation de score, annuler / recommencer.
+
+## Médailles, streak & statistiques
+
+Deux mécaniques de suivi distinctes qui cohabitent :
+
+- **Médailles par épisode** (échelle de points d'exclamation, selon ta précision) :
+  - **!** — précision ≥ 70 %
+  - **!!** — précision ≥ 85 %
+  - **!!!** — sans-faute (100 %)
+  - Affichées sous chaque tuile-niveau, en pips dorés.
+- **Streak** — le marqueur de prestige : enchaîner les épisodes où tu **bats le n°1 dans les règles de l'art** (sans-faute *et* score final supérieur au vrai gagnant). Une **bannière champion** « façon Johnny Gilbert » te couronne tant que la streak tient.
+- **PARFAIT** — récompense rare : une streak sur un épisode où tu couvres quasi tout le plateau débloque un **emblème diamant 3D**.
+- **Écran Statistiques** : streak (vs le record de 74 de Ken Jennings), carrière, course aux légendes (total vs Ken, meilleur épisode vs Holzhauer), médailles par épisode, et stats détaillées (Coryat moyen, taux de réussite, Daily Doubles, couverture, score moyen).
+
+Tout est **sauvegardé localement** (`localStorage`) : tes médailles, ta streak et tes totaux de carrière persistent entre les sessions.
+
+## Identité visuelle — Néon Pop
+
+Esthétique inspirée de **Pop Culture Jeopardy!** (l'édition Prime Video) :
+
+- **Accueil vivant** : fond en *sunburst* deux-tons (rayons bleus rayonnants, signature de l'émission) rendu en Canvas, wordmark JEOPARDY! or à extrusion 3D, scintillement, boutons à reflet.
+- **Accents néon** : glow cyan sur les titres, bannière champion en magenta néon — pendant que le bleu et l'or restent le cœur de la palette.
+- **Intensité graduée** : l'accueil et les titres pètent ; le plateau de jeu reste sobre et lisible (les montants priment).
+- **Tuiles-niveaux** texturées, pips dorés en volume, emblème diamant facetté en CSS 3D.
 
 ## Contenu
 
@@ -31,11 +56,11 @@ Couvre plusieurs éditions : **Pop Culture Jeopardy!** (Prime Video) et **Jeopar
 
 ## Utilisation
 
-Ouvre l'URL Netlify (ou `index.html` dans un navigateur). Choisis l'édition, la collection, puis l'épisode que tu regardes, et suis ton pointage.
+Ouvre l'URL Netlify (ou `index.html` dans un navigateur). Choisis l'édition, la collection, puis l'épisode que tu regardes, et suis ton pointage. Bats les légendes, une émission à la fois.
 
 ## Stack
 
-HTML / CSS / JavaScript vanilla. **Zéro dépendance, zéro build.** Un seul fichier : `index.html`. Polices Anton + Oswald (Google Fonts).
+HTML / CSS / JavaScript vanilla. **Zéro dépendance, zéro build.** Un seul fichier : `index.html`. Rendu maison : Canvas 2D (accueil), SVG (pips), CSS 3D (diamant), `localStorage` (stats). Polices Anton + Oswald (Google Fonts).
 
 ## Déploiement
 
@@ -55,7 +80,7 @@ python3 -m http.server 8000
 
 ## Notes
 
-- Le pointage **n'est pas sauvegardé** entre deux rechargements. Recharger = repartir à zéro. *(Réactivable via `localStorage`.)*
+- **Persistance** : tes statistiques (médailles, streak, carrière) sont sauvegardées via `localStorage`. En revanche, le **pointage en cours d'un épisode** repart à zéro si tu recharges en pleine partie.
 - **Données** — catégories, finales, scores réels et positions des Daily Doubles parsés depuis le HTML brut de **J-Archive** (épisodes classiques) ; Pop Culture vient de **The Jeopardy! Fan**. Le détail du périmètre vit dans `notes/`.
 - Les **finales de tournoi** se jouent sur 2 games (score cumulé) : le « gagnant » affiché par épisode est celui *du game*, pas forcément le champion du tournoi.
 - Les **anciens épisodes** (avant nov. 2001, ex. Brad Rutter 2000) utilisaient des valeurs $100–$500 / $200–$1000 ; l'app affiche les valeurs modernes — un repère, pas un calque exact.
