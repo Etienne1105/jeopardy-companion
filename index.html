@@ -371,6 +371,26 @@
   .opt-row .opt-val{color:var(--gold-bright);font-size:.85rem;}
   .opt-row.danger{border-color:rgba(216,49,59,.5);color:#ffb4b4;} .opt-row.danger .opt-val{color:#ffb4b4;}
 
+  /* pseudo (onboarding) */
+  .sig-pseudo{width:100%;max-width:300px;font-family:'Oswald';font-weight:600;font-size:1.1rem;text-align:center;color:#fff;
+    background:rgba(5,8,40,.5);border:1.5px solid rgba(255,210,63,.5);border-radius:12px;padding:12px;margin:0 auto 14px;display:block;}
+  .sig-pseudo::placeholder{color:rgba(205,212,255,.5);}
+
+  /* --- Classement (leaderboard) --- */
+  .lb-row{display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,var(--royal-hi),var(--royal-lo));
+    border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:10px 12px;margin-bottom:9px;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+  .lb-row.me{border-color:var(--gold-bright);box-shadow:0 0 16px rgba(255,210,63,.3);}
+  .lb-rank{font-family:'Anton';font-size:1.3rem;color:var(--gold-bright);min-width:30px;text-align:center;}
+  .lb-rank.r1{color:#ffd23f;} .lb-rank.r2{color:#cfd6f5;} .lb-rank.r3{color:#e0954a;}
+  .lb-sig{width:64px;height:30px;flex:0 0 auto;background:rgba(5,8,40,.5);border-radius:7px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .lb-sig img{max-width:100%;max-height:100%;}
+  .lb-name{flex:1;min-width:0;font-family:'Oswald';font-weight:600;color:#fff;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .lb-stat{text-align:right;flex:0 0 auto;}
+  .lb-stat .v{font-family:'Anton';color:#fff;font-size:1.1rem;line-height:1;}
+  .lb-stat .v small{font-size:.6rem;color:var(--gold-bright);}
+  .lb-stat .sub{font-size:.62rem;color:var(--muted);}
+  .lb-msg{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 16px;line-height:1.5;}
+
   /* --- Reveal flip des montants (damier colonne par colonne) --- */
   .cell .amt{transform-origin:center;}
   .board.flipin .cell .amt{animation:cellflip .42s var(--ease) backwards;}
@@ -422,8 +442,9 @@
     <div class="home-streak" id="homeStreak"></div>
     <div class="home-menu" id="homeMenu">
       <button class="menu-btn" id="btnPlay">JOUER</button>
-      <button class="menu-btn secondary" id="btnOptions">OPTIONS</button>
+      <button class="menu-btn secondary" id="btnBoard">🏆 CLASSEMENT</button>
       <button class="menu-btn secondary" id="btnStats">STATISTIQUES</button>
+      <button class="menu-btn secondary" id="btnOptions">OPTIONS</button>
     </div>
     <button class="menu-btn" id="btnStart">COMMENCER</button>
     <div class="home-foot" id="homeFoot"></div>
@@ -485,6 +506,12 @@
   <div id="statsBody"></div>
 </div>
 
+<!-- ===== CLASSEMENT ===== -->
+<div class="panel" id="leaderboard">
+  <div id="lbHead"></div>
+  <div id="lbBody"></div>
+</div>
+
 <!-- ===== OPTIONS ===== -->
 <div class="panel" id="options">
   <div id="optionsHead"></div>
@@ -523,8 +550,9 @@
 <!-- Écran de signature (rituel candidat) -->
 <div class="sig-overlay" id="sigOverlay">
   <div class="sig-inner">
-    <div class="sig-title">SIGNE TON NOM</div>
-    <div class="sig-sub">Comme un vrai candidat — dessine avec ton doigt</div>
+    <div class="sig-title">TON PROFIL</div>
+    <div class="sig-sub">Un pseudo pour le classement, puis signe comme un vrai candidat</div>
+    <input id="sigPseudo" class="sig-pseudo" type="text" maxlength="18" placeholder="Ton pseudo" autocomplete="off" autocapitalize="words">
     <canvas id="sigCanvas" class="sig-canvas"></canvas>
     <div class="sig-line">✎</div>
     <div class="sig-btns">
@@ -555,6 +583,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2" integrity="sha384-JWEyvHh+lRf0sN/WWY+QTQwX+CyWqmNg4tkc8GQzAMEtR2wGNrCJlvnu1lHD1kDm" crossorigin="anonymous"></script>
 <script>
 (function(){
   "use strict";
@@ -1154,6 +1183,7 @@
     gameEl.style.display    = name==="game"     ? "block" : "none";
     statsEl.style.display   = name==="stats"    ? "block" : "none";
     optionsEl.style.display = name==="options"  ? "block" : "none";
+    document.getElementById("leaderboard").style.display = name==="leaderboard" ? "block" : "none";
     if(name==="home") startHomeCanvas(); else stopHomeCanvas(); // RAF seulement à l'accueil
     if(name!=="game") sndStop("think"); // pas de musique de réflexion hors du jeu
     if(name==="game"){ sndStop("theme"); } else { playTheme(); } // thème = musique de menu : continu (accueil/stats/sélection/options), stoppé SEULEMENT en partie
@@ -1239,9 +1269,57 @@
   const STKEY="geopardie_stats_v1";
   function defaultStats(){ return {episodes:{}, streak:{current:0,best:0}, gamesPlayed:0, totalWon:0, bestEpisode:0,
     cellsWon:0, cellsLost:0, cellsPassed:0, ddTried:0, ddWon:0, coryatSum:0, coverageSum:0,
-    onboarded:false, signature:null, ddTipSeen:false}; }
+    onboarded:false, signature:null, ddTipSeen:false, pseudo:null, bestCoryat:0}; }
   let stats; try{ stats=JSON.parse(localStorage.getItem(STKEY))||defaultStats(); }catch(e){ stats=defaultStats(); }
   function saveStats(){ try{ localStorage.setItem(STKEY, JSON.stringify(stats)); }catch(e){} }
+
+  // ---------- Supabase (classement best-effort ; le local reste la SOURCE DE VÉRITÉ) ----------
+  const SUPA_URL="https://ihqhubbldocuuypsweuh.supabase.co";
+  const SUPA_KEY="sb_publishable_3qMBFoI2veqqHvif_1gBkQ_VXdi7fWG"; // clé PUBLIQUE : safe côté client, le RLS protège la base
+  let sb=null, _uid=null;
+  try{ if(window.supabase&&window.supabase.createClient) sb=window.supabase.createClient(SUPA_URL,SUPA_KEY); }catch(e){}
+  async function supaAuth(){ if(!sb)return; try{
+      const s=await sb.auth.getSession();
+      if(s&&s.data&&s.data.session){ _uid=s.data.session.user.id; return; }
+      const r=await sb.auth.signInAnonymously();
+      if(!r.error&&r.data&&r.data.user) _uid=r.data.user.id;
+    }catch(e){} }
+  function curAccuracy(){ const a=stats.cellsWon+stats.cellsLost; return a?Math.round(stats.cellsWon/a*100):0; }
+  async function syncProfile(){ if(!sb||!stats.pseudo) return; try{
+      if(!_uid) await supaAuth(); if(!_uid) return;
+      await sb.from("profiles").upsert({ id:_uid, pseudo:stats.pseudo, signature:stats.signature,
+        best_streak:stats.streak.best, best_coryat:stats.bestCoryat||0, total_won:stats.totalWon,
+        games_played:stats.gamesPlayed, accuracy:curAccuracy() }, {onConflict:"id"});
+    }catch(e){} }
+  async function renderLeaderboard(){
+    const head=document.getElementById("lbHead"), body=document.getElementById("lbBody");
+    panelHead(head,"Classement"); body.replaceChildren();
+    const loading=document.createElement("div"); loading.className="lb-msg";
+    if(!sb){ loading.textContent="Classement indisponible (connexion impossible)."; body.appendChild(loading); return; }
+    loading.textContent="Chargement…"; body.appendChild(loading);
+    try{
+      if(!_uid) await supaAuth();
+      const {data,error}=await sb.from("profiles")
+        .select("pseudo,signature,best_streak,best_coryat,total_won,games_played,accuracy")
+        .order("best_streak",{ascending:false}).order("best_coryat",{ascending:false}).limit(50);
+      if(error) throw error;
+      body.replaceChildren();
+      if(!data||!data.length){ const m=document.createElement("div"); m.className="lb-msg"; m.textContent="Personne au classement pour l'instant. Joue une partie pour ouvrir le bal ! 🏆"; body.appendChild(m); return; }
+      data.forEach((p,i)=>{
+        const row=document.createElement("div"); row.className="lb-row"+(stats.pseudo&&p.pseudo===stats.pseudo?" me":"");
+        const rk=document.createElement("div"); rk.className="lb-rank"+(i<3?(" r"+(i+1)):""); rk.textContent=(i+1);
+        const sig=document.createElement("div"); sig.className="lb-sig";
+        if(typeof p.signature==="string" && p.signature.slice(0,11)==="data:image/"){ const img=document.createElement("img"); img.src=p.signature; img.alt=""; sig.appendChild(img); }
+        const nm=document.createElement("div"); nm.className="lb-name"; nm.textContent=p.pseudo||"Joueur"; // textContent = ANTI-XSS (pseudo vient d'un autre joueur)
+        const st=document.createElement("div"); st.className="lb-stat";
+        const v=document.createElement("div"); v.className="v"; v.textContent=(p.best_streak||0); const sm=document.createElement("small"); sm.textContent=" 🔥"; v.appendChild(sm);
+        const sub=document.createElement("div"); sub.className="sub"; sub.textContent="Coryat $"+(p.best_coryat||0).toLocaleString("fr-CA");
+        st.appendChild(v); st.appendChild(sub);
+        row.appendChild(rk); row.appendChild(sig); row.appendChild(nm); row.appendChild(st);
+        body.appendChild(row);
+      });
+    }catch(e){ body.replaceChildren(); const m=document.createElement("div"); m.className="lb-msg"; m.textContent="Classement indisponible pour l'instant — réessaie plus tard."; body.appendChild(m); }
+  }
 
   // ---------- Calcul d'une partie + médaille (échelle gigogne) ----------
   const TIERS=["!","!!","!!!","streak","perfect"];
@@ -1289,11 +1367,13 @@
       stats.cellsWon+=g.rWon; stats.cellsLost+=g.rLost; stats.cellsPassed+=g.neutral;
       stats.ddTried+=g.ddCount; stats.ddWon+=g.ddWon;
       stats.coryatSum+=g.coryat;
+      if(g.coryat>(stats.bestCoryat||0)) stats.bestCoryat=g.coryat; // meilleur Coryat (tri du classement)
       stats.coverageSum += g.resolved/(COLS*ROWS*2);
       if(tierRank(g.tier)>=tierRank("streak")){ stats.streak.current++; if(stats.streak.current>stats.streak.best) stats.streak.best=stats.streak.current; }
       else stats.streak.current=0;
     }
     saveStats();
+    syncProfile(); // pousse les scores au classement (best-effort, n'attend pas, ne bloque jamais le jeu)
     const newRank=tierRank(g.tier);                                 // feu UNE fois, à la montée vers !!! / streak / PARFAIT
     if(newRank>prevRank && newRank>=tierRank("!!!")) celebrate(g.tier);
   }
@@ -1381,6 +1461,7 @@
   function goHome(){ updateHome(); showScreen("home"); }
   document.getElementById("btnPlay").addEventListener("click",()=>{ view="iterations"; renderBrowse(); showScreen("selector"); });
   document.getElementById("btnStats").addEventListener("click",()=>{ renderStats(); showScreen("stats"); });
+  document.getElementById("btnBoard").addEventListener("click",()=>{ renderLeaderboard(); showScreen("leaderboard"); });
 
   // ============ ONBOARDING : signature, règles, options ============
   // ---- Signature (rituel candidat : champ bleu, trait blanc) ----
@@ -1393,14 +1474,14 @@
   function _sigDown(e){ if(!_sigCtx)return; e.preventDefault(); _sigDrawing=true; _sigDirty=true; try{sigCanvas.setPointerCapture(e.pointerId);}catch(_){} const p=_sigPos(e); _sigCtx.beginPath(); _sigCtx.moveTo(p.x,p.y); _sigCtx.lineTo(p.x+0.1,p.y+0.1); _sigCtx.stroke(); }
   function _sigMove(e){ if(!_sigDrawing||!_sigCtx)return; e.preventDefault(); const p=_sigPos(e); _sigCtx.lineTo(p.x,p.y); _sigCtx.stroke(); }
   function _sigUp(){ _sigDrawing=false; }
-  function openSig(doneCb){ _sigDoneCb=doneCb||null; sigOverlay.classList.add("open"); requestAnimationFrame(_sigSize); }
+  function openSig(doneCb){ _sigDoneCb=doneCb||null; document.getElementById("sigPseudo").value=stats.pseudo||""; sigOverlay.classList.add("open"); requestAnimationFrame(_sigSize); }
   function closeSig(){ sigOverlay.classList.remove("open"); }
   sigCanvas.addEventListener("pointerdown",_sigDown);
   sigCanvas.addEventListener("pointermove",_sigMove);
   sigCanvas.addEventListener("pointerup",_sigUp);
   sigCanvas.addEventListener("pointercancel",_sigUp);
   document.getElementById("sigClear").addEventListener("click",()=>{ if(_sigCtx)_sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); _sigDirty=false; });
-  document.getElementById("sigDone").addEventListener("click",()=>{ if(_sigDirty){ try{ stats.signature=sigCanvas.toDataURL("image/png"); }catch(e){} } closeSig(); const cb=_sigDoneCb; _sigDoneCb=null; if(cb)cb(); });
+  document.getElementById("sigDone").addEventListener("click",()=>{ const pv=document.getElementById("sigPseudo").value.trim(); if(pv) stats.pseudo=pv; if(_sigDirty){ try{ stats.signature=sigCanvas.toDataURL("image/png"); }catch(e){} } closeSig(); const cb=_sigDoneCb; _sigDoneCb=null; if(cb)cb(); });
 
   // ---- Règles (panneau « ? ») ----
   const rulesOverlay=document.getElementById("rulesOverlay");
@@ -1412,16 +1493,16 @@
 
   // ---- Premier lancement : COMMENCER → signature → règles → menu ----
   document.getElementById("btnStart").addEventListener("click",()=>{ playTheme(); // démarre le thème (geste = unlock iOS)
-    openSig(()=>{ stats.onboarded=true; saveStats(); updateHome(); openRules(); }); });
+    openSig(()=>{ stats.onboarded=true; saveStats(); syncProfile(); updateHome(); openRules(); }); });
 
   // ---- Écran Options ----
   function renderOptions(){ panelHead(document.getElementById("optionsHead"),"Options");
     document.getElementById("optSoundVal").textContent = muted ? "Coupé" : "Activé"; }
   document.getElementById("btnOptions").addEventListener("click",()=>{ renderOptions(); showScreen("options"); });
   document.getElementById("optSound").addEventListener("click",()=>{ document.getElementById("muteBtn").click(); renderOptions(); });
-  document.getElementById("optSig").addEventListener("click",()=>{ openSig(()=>{ saveStats(); updateHome(); }); });
+  document.getElementById("optSig").addEventListener("click",()=>{ openSig(()=>{ saveStats(); syncProfile(); updateHome(); }); });
   document.getElementById("optRules").addEventListener("click",openRules);
-  document.getElementById("optIntro").addEventListener("click",()=>{ playTheme(); openSig(()=>{ stats.onboarded=true; saveStats(); updateHome(); openRules(); }); });
+  document.getElementById("optIntro").addEventListener("click",()=>{ playTheme(); openSig(()=>{ stats.onboarded=true; saveStats(); syncProfile(); updateHome(); openRules(); }); });
   document.getElementById("optReset").addEventListener("click",()=>{ if(confirm("Effacer TOUTES tes statistiques et ta signature ? Irréversible.")){ stats=defaultStats(); saveStats(); goHome(); } });
 
   // ---------- Démarrage ----------
@@ -1430,7 +1511,7 @@
   (function(){ function u(){ document.removeEventListener("pointerdown",u,true);
     setTimeout(function(){ if(gameEl.style.display==="none") playTheme(); },0); }
     document.addEventListener("pointerdown",u,true); })();
-  initSnd(); updateHome(); showScreen("home");
+  initSnd(); supaAuth(); updateHome(); showScreen("home"); // supaAuth = best-effort, n'attend pas
 })();
 </script>
 </body>
