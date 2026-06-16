@@ -16,7 +16,8 @@ Couvre plusieurs éditions : **Pop Culture Jeopardy!** (Prime Video) et **Jeopar
 - **Reveal en damier** : à l'ouverture d'une manche, les montants se remplissent colonne par colonne, comme à l'écran.
 - **Anti-spoiler** : le vrai résultat (scores + gagnant) reste caché derrière un bouton « Révéler le vrai résultat ». Les Daily Doubles ne sont pas révélés visuellement avant le clic.
 - **En-têtes éditables** : si une catégorie diffère à l'écran, touche l'en-tête pour la corriger.
-- Effets sonores Web Audio (bouton mute), animation de score, annuler / recommencer.
+- **Son authentique Jeopardy!** (bouton mute) : le sting Daily Double à l'ouverture, le *ding* sur les bonnes réponses, le buzzer sur les mauvaises, le remplissage du plateau au reveal, la musique *Think!* en boucle pendant la finale, et le thème quand tu décroches une streak/PARFAIT.
+- Animation de score, annuler / recommencer.
 
 ## Médailles, streak & statistiques
 
@@ -42,6 +43,13 @@ Esthétique inspirée de **Pop Culture Jeopardy!** (l'édition Prime Video) :
 - **Intensité graduée** : l'accueil et les titres pètent ; le plateau de jeu reste sobre et lisible (les montants priment).
 - **Tuiles-niveaux** texturées, pips dorés en volume, emblème diamant facetté en CSS 3D.
 
+### Juice & récompense
+
+Le « wow » est réservé aux moments rares, pour qu'il garde sa valeur :
+
+- **Confetti à la montée de palier** : un burst de particules (Canvas maison, palette Néon Pop) se déclenche **une seule fois** quand tu décroches un nouveau palier — densité graduée : `!!!` (or) → streak (magenta + or) → **PARFAIT** (or + magenta + cyan). Pas de rejeu sur un *annuler*/recommit.
+- **Daily Double réussi renforcé** : anneau or large autour du score + pulse du montant qui gonfle. Un raté garde le flash de perte normal (ça doit piquer).
+
 ## Contenu
 
 **Pop Culture Jeopardy!** — Prime Video, format Knockout (3 équipes)
@@ -60,7 +68,7 @@ Ouvre l'URL Netlify (ou `index.html` dans un navigateur). Choisis l'édition, la
 
 ## Stack
 
-HTML / CSS / JavaScript vanilla. **Zéro dépendance, zéro build.** Un seul fichier : `index.html`. Rendu maison : Canvas 2D (accueil), SVG (pips), CSS 3D (diamant), `localStorage` (stats). Polices Anton + Oswald (Google Fonts).
+HTML / CSS / JavaScript vanilla. **Zéro dépendance, zéro build.** Un seul fichier : `index.html`. Rendu maison : Canvas 2D (accueil + confetti), SVG (pips), CSS 3D (diamant), `localStorage` (stats). **Son embarqué** : 6 samples Jeopardy! encodés en base64 directement dans le fichier (data-URI, lus via `HTMLAudioElement`), pour rester un seul fichier autonome — `index.html` pèse ~1,4 MB de ce fait. Polices Anton + Oswald (Google Fonts).
 
 ## Déploiement
 
@@ -81,7 +89,8 @@ python3 -m http.server 8000
 ## Notes
 
 - **Persistance** : tes statistiques (médailles, streak, carrière) sont sauvegardées via `localStorage`. En revanche, le **pointage en cours d'un épisode** repart à zéro si tu recharges en pleine partie.
-- **Mobile / iOS** : overscroll bloqué (`overscroll-behavior`) pour éviter le rubber-band haut/bas, et châssis Safari teinté en bleu (`theme-color`) — plein écran sans bandes blanches.
+- **Mobile / iOS** : overscroll bloqué (`overscroll-behavior`) pour éviter le rubber-band haut/bas, et châssis Safari teinté en bleu (`theme-color`) — plein écran sans bandes blanches. Le son se débloque au premier *tap* (politique d'autoplay).
+- **Son** : samples issus de la communauté (soundboards Jeopardy!). Marques et sons de l'émission appartiennent à Sony Pictures Television — usage **perso/solo** ici. Pour une diffusion publique, remplacer par des sons libres de droits.
 - **Données** — catégories, finales, scores réels et positions des Daily Doubles parsés depuis le HTML brut de **J-Archive** (épisodes classiques) ; Pop Culture vient de **The Jeopardy! Fan**. Le détail du périmètre vit dans `notes/`.
 - Les **finales de tournoi** se jouent sur 2 games (score cumulé) : le « gagnant » affiché par épisode est celui *du game*, pas forcément le champion du tournoi.
 - Les **anciens épisodes** (avant nov. 2001, ex. Brad Rutter 2000) utilisaient des valeurs $100–$500 / $200–$1000 ; l'app affiche les valeurs modernes — un repère, pas un calque exact.
