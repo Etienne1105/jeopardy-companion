@@ -421,10 +421,6 @@
     ⚠️ Catégories partielles : pré-remplies depuis le résumé Prime (réparties au mieux entre les manches). Ajuste-les en regardant.
   </div>
 
-  <div class="banner" id="ddBanner" style="display:none;">
-    🎲 Daily Doubles non marqués pour cet épisode — fais <b>3 tapes</b> sur une case pour en déclencher un toi-même.
-  </div>
-
   <div id="boardWrap"></div>
 
   <div class="reveal-wrap" id="revealWrap">
@@ -462,6 +458,14 @@
       <button class="final-btn bad" id="ddBad">Raté</button>
     </div>
     <button class="dd-cancel" id="ddCancel">Annuler</button>
+  </div>
+</div>
+
+<div class="dd-overlay" id="ddTipOverlay">
+  <div class="dd-dialog">
+    <div class="dd-title">🎲 DAILY DOUBLES</div>
+    <div class="dd-hint">Cet épisode n'a pas de Daily Doubles marqués. Pour en déclencher un toi-même, fais <b>3 tapes</b> sur une case.</div>
+    <div class="final-btns"><button class="final-btn good" id="ddTipOk">J'ai compris</button></div>
   </div>
 </div>
 
@@ -857,7 +861,7 @@
     document.getElementById("epPillVal").textContent=e.title;
     document.getElementById("partialBanner").style.display=e.complete?"none":"block";
     const hasDD=e.dd&&(((e.dd.simple||[]).length)||((e.dd.double||[]).length));
-    document.getElementById("ddBanner").style.display=hasDD?"none":"block";
+    if(!hasDD && !stats.ddTipSeen) openDDTip(); // pop-up explicatif (une seule fois), au lieu d'un bandeau qui mange la hauteur
     revealed=false; document.getElementById("revealContent").style.display="none";
     const rb=document.getElementById("revealBtn");
     rb.textContent= e.result ? "🏆 Révéler le vrai résultat (spoiler)" : "🏆 Résultat non disponible pour cet épisode";
@@ -953,6 +957,13 @@
   document.getElementById("ddBad").addEventListener("click",()=>ddAnswer(false));
   document.getElementById("ddCancel").addEventListener("click",closeDD);
   ddOverlay.addEventListener("click",e=>{ if(e.target===ddOverlay)closeDD(); });
+
+  // Pop-up explicatif Daily Double (une seule fois — flag persistant)
+  const ddTipOverlay=document.getElementById("ddTipOverlay");
+  function openDDTip(){ ddTipOverlay.classList.add("open"); }
+  function closeDDTip(){ ddTipOverlay.classList.remove("open"); stats.ddTipSeen=true; saveStats(); }
+  document.getElementById("ddTipOk").addEventListener("click",closeDDTip);
+  ddTipOverlay.addEventListener("click",e=>{ if(e.target===ddTipOverlay)closeDDTip(); });
 
   // ---------- Rendu ----------
   const wrap=document.getElementById("boardWrap");
