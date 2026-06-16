@@ -137,6 +137,9 @@
     border:1px solid rgba(255,210,63,.4);border-radius:10px;padding:6px 8px;-moz-appearance:textfield;}
   .wager-input::-webkit-outer-spin-button,.wager-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
   .final-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  /* Un seul bouton (modals « Compris » / « Génial ! » / « J'ai compris ») → grille 1 colonne + centré */
+  .final-btns:has(.final-btn:only-child){grid-template-columns:1fr;justify-items:center;}
+  .final-btns:has(.final-btn:only-child) .final-btn{width:auto;min-width:64%;padding-left:32px;padding-right:32px;}
   .final-btn{font-family:'Oswald';font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:.92rem;padding:16px 8px;
     border-radius:12px;cursor:pointer;border:none;color:#fff;transition:transform .12s var(--ease);touch-action:manipulation;}
   .final-btn:active{transform:scale(.95);} .final-btn.good{background:linear-gradient(180deg,var(--won-hi),var(--won));}
@@ -321,6 +324,12 @@
   .home .home-sub{margin-top:14px;color:#eafaff;font-weight:600;letter-spacing:3px;text-transform:uppercase;font-size:.74rem;
     text-shadow:0 0 4px var(--cyan),0 0 12px rgba(39,227,255,.7);}
   .home .home-streak{color:var(--muted);font-size:.8rem;min-height:1.1em;margin:8px 0 0;}
+  /* Variante tagline (nouveau joueur) : on la fait pop en or + glow + pulse douce */
+  .home .home-streak.tagline{color:var(--gold-bright);font-family:'Oswald';font-weight:700;font-style:italic;
+    font-size:1.02rem;letter-spacing:.5px;margin-top:12px;
+    text-shadow:0 0 9px rgba(255,210,63,.55),0 2px 3px #06082e;animation:tagpop 2.8s var(--ease) infinite;}
+  @keyframes tagpop{0%,100%{opacity:.92;transform:scale(1);text-shadow:0 0 8px rgba(255,210,63,.4),0 2px 3px #06082e;}
+    50%{opacity:1;transform:scale(1.035);text-shadow:0 0 16px rgba(255,210,63,.8),0 2px 3px #06082e;}}
   .home-menu{display:flex;flex-direction:column;gap:13px;width:100%;margin-top:34px;}
   .menu-btn{position:relative;overflow:hidden;font-family:'Anton';font-size:1.45rem;letter-spacing:1px;color:#241a00;
     background:linear-gradient(180deg,var(--gold-bright),var(--gold));border:none;border-radius:14px;padding:17px;cursor:pointer;
@@ -362,6 +371,9 @@
   .rules-body{color:#dfe4ff;font-size:.82rem;line-height:1.5;margin:10px 0 16px;max-height:58vh;overflow-y:auto;}
   .rules-body p{margin:0 0 8px;} .rules-body b{color:var(--gold-bright);font-weight:600;}
   .rules-body ul{margin:0 0 8px;padding-left:18px;} .rules-body li{margin:2px 0;}
+  .wn-list{list-style:none;margin:6px 0 16px;padding:0;text-align:left;}
+  .wn-list li{color:#dfe4ff;font-size:.83rem;line-height:1.4;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.08);}
+  .wn-list li:last-child{border-bottom:none;}
 
   .opt-list{display:flex;flex-direction:column;gap:10px;}
   .opt-row{display:flex;align-items:center;justify-content:space-between;font-family:'Oswald';font-weight:600;font-size:.95rem;color:#eafaff;
@@ -580,6 +592,16 @@
       <p><b>Récompenses :</b> médailles par épisode (! · !! · !!!), streak en battant le n°1, et l'emblème <b>PARFAIT</b>.</p>
     </div>
     <div class="final-btns"><button class="final-btn good" id="rulesOk">Compris</button></div>
+  </div>
+</div>
+
+<!-- Quoi de neuf (annonce de version aux joueurs de retour) -->
+<div class="dd-overlay" id="whatsNewOverlay">
+  <div class="dd-dialog">
+    <div class="dd-title">✨ QUOI DE NEUF</div>
+    <div class="dd-hint">Du nouveau depuis ta dernière visite&nbsp;:</div>
+    <ul class="wn-list" id="wnList"></ul>
+    <div class="final-btns"><button class="final-btn good" id="wnOk">Génial&nbsp;!</button></div>
   </div>
 </div>
 
@@ -1269,8 +1291,10 @@
   const STKEY="geopardie_stats_v1";
   function defaultStats(){ return {episodes:{}, streak:{current:0,best:0}, gamesPlayed:0, totalWon:0, bestEpisode:0,
     cellsWon:0, cellsLost:0, cellsPassed:0, ddTried:0, ddWon:0, coryatSum:0, coverageSum:0,
-    onboarded:false, signature:null, ddTipSeen:false, pseudo:null, bestCoryat:0}; }
-  let stats; try{ stats=JSON.parse(localStorage.getItem(STKEY))||defaultStats(); }catch(e){ stats=defaultStats(); }
+    onboarded:false, signature:null, ddTipSeen:false, pseudo:null, bestCoryat:0, seenVersion:0}; }
+  // Object.assign : les defaults posent le plancher, les valeurs stockées écrasent par-dessus
+  // → un ancien build (sans seenVersion/onboarded/streak…) hérite des nouveaux champs sans planter.
+  let stats; try{ stats=Object.assign(defaultStats(), JSON.parse(localStorage.getItem(STKEY))||{}); }catch(e){ stats=defaultStats(); }
   function saveStats(){ try{ localStorage.setItem(STKEY, JSON.stringify(stats)); }catch(e){} }
 
   // ---------- Supabase (classement best-effort ; le local reste la SOURCE DE VÉRITÉ) ----------
@@ -1448,6 +1472,7 @@
     const hs=document.getElementById("homeStreak");
     hs.textContent = stats.streak.current>0 ? ("🔥 Streak en cours : "+stats.streak.current+"  ·  record "+stats.streak.best)
       : (stats.gamesPlayed>0 ? ("Meilleure streak : "+stats.streak.best+"  ·  "+stats.gamesPlayed+" parties") : "Bats les légendes, une émission à la fois.");
+    hs.classList.toggle("tagline", stats.streak.current<=0 && stats.gamesPlayed<=0); // pop seulement sur la tagline
     const totEp=ITERATIONS.reduce((s,it)=>s+it.collections.reduce((a,c)=>a+c.episodes.length,0),0);
     document.getElementById("homeFoot").textContent = totEp+" épisodes · 2 éditions";
     // deux modes : premier lancement (COMMENCER) vs menu principal (JOUER/OPTIONS/STATS + « ? » + signature)
@@ -1491,9 +1516,42 @@
   rulesOverlay.addEventListener("click",e=>{ if(e.target===rulesOverlay)closeRules(); });
   document.getElementById("helpBtn").addEventListener("click",()=>{ snd("timesup",0.7); openRules(); }); // son « temps écoulé »
 
+  // ---- Quoi de neuf (annonce de version aux joueurs de retour) ----
+  // Incrémenter APP_VERSION à chaque vague de nouveautés ; tout joueur dont seenVersion est inférieur la verra une fois.
+  const APP_VERSION=1;
+  const WHATS_NEW=[
+    "🏆 Classement en ligne — crée ton profil et affronte tes amis",
+    "🖊️ Pseudo & signature — ta bannière de champion est à ton nom",
+    "🔊 Son authentique — thème, buzzer, sting Daily Double, Think!",
+    "🎊 Confetti & juice — célébrations aux paliers et Daily Doubles réussis"
+  ];
+  const whatsNewOverlay=document.getElementById("whatsNewOverlay");
+  function openWhatsNew(){
+    const ul=document.getElementById("wnList"); ul.replaceChildren(); // DOM-safe (pas d'innerHTML)
+    WHATS_NEW.forEach(t=>{ const li=document.createElement("li"); li.textContent=t; ul.appendChild(li); });
+    document.getElementById("wnOk").textContent = stats.pseudo ? "Génial !" : "Créer mon profil";
+    whatsNewOverlay.classList.add("open");
+  }
+  function dismissWhatsNew(){ // simple fermeture (clic hors zone) : marque vu, aucune action forcée
+    whatsNewOverlay.classList.remove("open");
+    stats.seenVersion=APP_VERSION; saveStats();
+  }
+  function wnAction(){ // clic sur le bouton : marque vu, puis crée le profil si absent
+    dismissWhatsNew();
+    if(!stats.pseudo){ openSig(()=>{ saveStats(); syncProfile(); updateHome(); }); }
+    else syncProfile();
+  }
+  function maybeWhatsNew(){
+    if(!stats.onboarded) return;                      // nouveau joueur → onboarding s'en charge, pas ça
+    if((stats.seenVersion||0) >= APP_VERSION) return; // déjà à jour
+    openWhatsNew();
+  }
+  document.getElementById("wnOk").addEventListener("click",wnAction);
+  whatsNewOverlay.addEventListener("click",e=>{ if(e.target===whatsNewOverlay) dismissWhatsNew(); });
+
   // ---- Premier lancement : COMMENCER → signature → règles → menu ----
   document.getElementById("btnStart").addEventListener("click",()=>{ playTheme(); // démarre le thème (geste = unlock iOS)
-    openSig(()=>{ stats.onboarded=true; saveStats(); syncProfile(); updateHome(); openRules(); }); });
+    openSig(()=>{ stats.onboarded=true; stats.seenVersion=APP_VERSION; saveStats(); syncProfile(); updateHome(); openRules(); }); });
 
   // ---- Écran Options ----
   function renderOptions(){ panelHead(document.getElementById("optionsHead"),"Options");
@@ -1502,7 +1560,7 @@
   document.getElementById("optSound").addEventListener("click",()=>{ document.getElementById("muteBtn").click(); renderOptions(); });
   document.getElementById("optSig").addEventListener("click",()=>{ openSig(()=>{ saveStats(); syncProfile(); updateHome(); }); });
   document.getElementById("optRules").addEventListener("click",openRules);
-  document.getElementById("optIntro").addEventListener("click",()=>{ playTheme(); openSig(()=>{ stats.onboarded=true; saveStats(); syncProfile(); updateHome(); openRules(); }); });
+  document.getElementById("optIntro").addEventListener("click",()=>{ playTheme(); openSig(()=>{ stats.onboarded=true; stats.seenVersion=APP_VERSION; saveStats(); syncProfile(); updateHome(); openRules(); }); });
   document.getElementById("optReset").addEventListener("click",()=>{ if(confirm("Effacer TOUTES tes statistiques et ta signature ? Irréversible.")){ stats=defaultStats(); saveStats(); goHome(); } });
 
   // ---------- Démarrage ----------
@@ -1511,7 +1569,11 @@
   (function(){ function u(){ document.removeEventListener("pointerdown",u,true);
     setTimeout(function(){ if(gameEl.style.display==="none") playTheme(); },0); }
     document.addEventListener("pointerdown",u,true); })();
-  initSnd(); supaAuth(); updateHome(); showScreen("home"); // supaAuth = best-effort, n'attend pas
+  // supaAuth = best-effort, n'attend pas. Au retour, on re-pousse le profil des habitués (idempotent)
+  // pour qu'ils figurent au classement même sans rejouer une partie (cas « ancien build rechargé »).
+  initSnd();
+  supaAuth().then(()=>{ if(stats.onboarded && stats.pseudo) syncProfile(); });
+  updateHome(); showScreen("home"); maybeWhatsNew();
 })();
 </script>
 </body>

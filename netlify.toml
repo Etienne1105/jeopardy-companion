@@ -1,2 +1,15 @@
 [build]
   publish = "."
+
+# Le HTML doit toujours être revalidé : un habitué qui recharge récupère le dernier build
+# (et donc « Quoi de neuf »), au lieu d'une version mise en cache. Les assets (theme.mp3, etc.)
+# gardent le cache par défaut de Netlify.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
