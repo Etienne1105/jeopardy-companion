@@ -16,7 +16,7 @@ Couvre plusieurs éditions : **Pop Culture Jeopardy!** (Prime Video) et **Jeopar
 - **Reveal en damier** : à l'ouverture d'une manche, les montants se remplissent colonne par colonne, comme à l'écran.
 - **Anti-spoiler** : le vrai résultat (scores + gagnant) reste caché derrière un bouton « Révéler le vrai résultat ». Les Daily Doubles ne sont pas révélés visuellement avant le clic.
 - **En-têtes éditables** : si une catégorie diffère à l'écran, touche l'en-tête pour la corriger.
-- **Son authentique Jeopardy!** (bouton mute) : le sting Daily Double à l'ouverture, le *ding* sur les bonnes réponses, le buzzer sur les mauvaises, le remplissage du plateau au reveal, la musique *Think!* en boucle pendant la finale, et le thème quand tu décroches une streak/PARFAIT.
+- **Son authentique Jeopardy!** (bouton mute) : le sting Daily Double à l'ouverture, le *ding* sur les bonnes réponses, le buzzer sur les mauvaises, le remplissage du plateau au reveal, la musique *Think!* en boucle pendant la finale, et le **thème (version longue ~3 min) qui joue en continu sur tous les écrans menu** (accueil, sélection, stats) et s'arrête seulement quand une partie démarre.
 - Animation de score, annuler / recommencer.
 
 ## Médailles, streak & statistiques
@@ -68,7 +68,7 @@ Ouvre l'URL Netlify (ou `index.html` dans un navigateur). Choisis l'édition, la
 
 ## Stack
 
-HTML / CSS / JavaScript vanilla. **Zéro dépendance, zéro build.** Un seul fichier : `index.html`. Rendu maison : Canvas 2D (accueil + confetti), SVG (pips), CSS 3D (diamant), `localStorage` (stats). **Son embarqué** : 6 samples Jeopardy! encodés en base64 directement dans le fichier (data-URI, lus via `HTMLAudioElement`), pour rester un seul fichier autonome — `index.html` pèse ~1,4 MB de ce fait. Polices Anton + Oswald (Google Fonts).
+HTML / CSS / JavaScript vanilla. **Zéro dépendance, zéro build.** Quasi tout dans `index.html` (~1,15 MB). Rendu maison : Canvas 2D (accueil + confetti), SVG (pips), CSS 3D (diamant), `localStorage` (stats). **Son** : 5 SFX courts encodés en base64 directement dans le fichier (data-URI, lus via `HTMLAudioElement`) ; le **thème (version longue ~3 min) est le seul fichier séparé** (`theme.mp3`), pour qu'il se *streame* et n'alourdisse pas le HTML. Polices Anton + Oswald (Google Fonts).
 
 ## Déploiement
 
