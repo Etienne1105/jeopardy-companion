@@ -896,7 +896,7 @@
     b.appendChild(el("span","cstar","✦"));
     const txt=el("div","ctxt");
     txt.appendChild(el("div","lbl","Johnny Gilbert présente"));
-    txt.appendChild(el("div","nm","LE CHAMPION DU SALON"));
+    txt.appendChild(el("div","nm", stats.pseudo ? (stats.pseudo.toUpperCase()+", CHAMPION !") : "LE CHAMPION DU SALON"));
     txt.appendChild(el("div","desc","vainqueur de "+cur+" émission"+(cur>1?"s":"")+" d'affilée — qui osera l'arrêter ?"));
     b.appendChild(txt); b.appendChild(el("span","cstar","✦"));
     browseHead.appendChild(b);
