@@ -333,6 +333,44 @@
   .menu-btn.secondary:active{box-shadow:0 2px 0 #061049,0 6px 14px rgba(0,0,0,.5);}
   .home-foot{margin-top:28px;color:var(--muted);font-size:.7rem;letter-spacing:1px;opacity:.6;}
 
+  /* --- Onboarding : bouton « ? », signature accueil, écran signature, règles, options --- */
+  .help-btn{position:absolute;top:max(env(safe-area-inset-top),14px);right:16px;z-index:3;width:40px;height:40px;border-radius:12px;
+    font-family:'Anton';font-size:1.35rem;color:var(--gold-bright);background:rgba(11,31,181,.5);border:1.5px solid rgba(255,210,63,.55);
+    cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4);transition:transform .1s var(--ease);touch-action:manipulation;}
+  .help-btn:active{transform:scale(.92);}
+  .home-sig{margin-top:12px;text-align:center;}
+  .home-sig img{max-width:210px;max-height:54px;background:rgba(5,8,40,.45);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:6px 16px;
+    box-shadow:0 4px 14px rgba(0,0,0,.4);}
+  #btnStart{width:100%;margin-top:34px;}
+
+  .sig-overlay{display:none;position:fixed;inset:0;z-index:80;background:radial-gradient(120% 90% at 50% 18%,#0b1fb5,#05082b 92%);
+    flex-direction:column;align-items:center;justify-content:center;padding:max(env(safe-area-inset-top),24px) 22px max(env(safe-area-inset-bottom),24px);}
+  .sig-overlay.open{display:flex;}
+  .sig-inner{width:100%;max-width:420px;text-align:center;}
+  .sig-title{font-family:'Anton';font-size:1.9rem;color:var(--gold-bright);letter-spacing:1px;text-shadow:0 0 14px rgba(255,210,63,.45);}
+  .sig-sub{color:#cdd4ff;font-size:.82rem;margin:6px 0 18px;}
+  .sig-canvas{width:100%;height:230px;border-radius:16px;background:linear-gradient(180deg,#0d23c9,#0a1aa0);
+    border:2px solid rgba(255,255,255,.28);box-shadow:inset 0 2px 14px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.5);
+    touch-action:none;cursor:crosshair;display:block;}
+  .sig-line{color:rgba(255,255,255,.3);font-size:.95rem;margin-top:10px;}
+  .sig-btns{display:flex;gap:12px;margin-top:16px;}
+  .sig-btns .final-btn{flex:1;}
+  .sig-clear{flex:0 0 auto;border:1px solid rgba(152,162,220,.4);background:rgba(11,31,181,.4);color:#cdd4ff;font-family:'Oswald';font-weight:600;
+    text-transform:uppercase;letter-spacing:.5px;font-size:.85rem;padding:0 18px;border-radius:12px;cursor:pointer;}
+
+  .rules-dialog{max-width:380px;text-align:left;}
+  .rules-body{color:#dfe4ff;font-size:.82rem;line-height:1.5;margin:10px 0 16px;max-height:58vh;overflow-y:auto;}
+  .rules-body p{margin:0 0 8px;} .rules-body b{color:var(--gold-bright);font-weight:600;}
+  .rules-body ul{margin:0 0 8px;padding-left:18px;} .rules-body li{margin:2px 0;}
+
+  .opt-list{display:flex;flex-direction:column;gap:10px;}
+  .opt-row{display:flex;align-items:center;justify-content:space-between;font-family:'Oswald';font-weight:600;font-size:.95rem;color:#eafaff;
+    background:linear-gradient(180deg,var(--royal-hi),var(--royal-lo));border:1px solid rgba(255,255,255,.12);border-radius:13px;
+    padding:16px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35);transition:transform .1s var(--ease);text-align:left;width:100%;}
+  .opt-row:active{transform:scale(.98);}
+  .opt-row .opt-val{color:var(--gold-bright);font-size:.85rem;}
+  .opt-row.danger{border-color:rgba(216,49,59,.5);color:#ffb4b4;} .opt-row.danger .opt-val{color:#ffb4b4;}
+
   /* --- Reveal flip des montants (damier colonne par colonne) --- */
   .cell .amt{transform-origin:center;}
   .board.flipin .cell .amt{animation:cellflip .42s var(--ease) backwards;}
@@ -380,13 +418,17 @@
   <div class="home-inner">
     <h1 class="title"><span class="g">JEOPARDY!</span><span class="shine">JEOPARDY!</span></h1>
     <div class="home-sub">Compagnon de pointage</div>
+    <div class="home-sig" id="homeSig"></div>
     <div class="home-streak" id="homeStreak"></div>
-    <div class="home-menu">
+    <div class="home-menu" id="homeMenu">
       <button class="menu-btn" id="btnPlay">JOUER</button>
+      <button class="menu-btn secondary" id="btnOptions">OPTIONS</button>
       <button class="menu-btn secondary" id="btnStats">STATISTIQUES</button>
     </div>
+    <button class="menu-btn" id="btnStart">COMMENCER</button>
     <div class="home-foot" id="homeFoot"></div>
   </div>
+  <button class="help-btn" id="helpBtn" aria-label="Règles" title="Règles">?</button>
 </div>
 
 <!-- ===== SÉLECTEUR ===== -->
@@ -417,9 +459,6 @@
     <button class="round-btn" data-round="final">Finale</button>
   </div>
 
-  <div class="banner" id="partialBanner" style="display:none;">
-    ⚠️ Catégories partielles : pré-remplies depuis le résumé Prime (réparties au mieux entre les manches). Ajuste-les en regardant.
-  </div>
 
   <div id="boardWrap"></div>
 
@@ -446,6 +485,18 @@
   <div id="statsBody"></div>
 </div>
 
+<!-- ===== OPTIONS ===== -->
+<div class="panel" id="options">
+  <div id="optionsHead"></div>
+  <div class="opt-list">
+    <button class="opt-row" id="optSound"><span>🔊 Son</span><span class="opt-val" id="optSoundVal">Activé</span></button>
+    <button class="opt-row" id="optSig"><span>🖊️ Refaire ma signature</span><span class="opt-val">›</span></button>
+    <button class="opt-row" id="optRules"><span>❔ Revoir les règles</span><span class="opt-val">›</span></button>
+    <button class="opt-row" id="optIntro"><span>🎬 Revoir l'intro</span><span class="opt-val">›</span></button>
+    <button class="opt-row danger" id="optReset"><span>⟳ Réinitialiser les statistiques</span><span class="opt-val">›</span></button>
+  </div>
+</div>
+
 <!-- ===== OVERLAY DAILY DOUBLE ===== -->
 <div class="dd-overlay" id="ddOverlay">
   <div class="dd-dialog">
@@ -466,6 +517,41 @@
     <div class="dd-title">🎲 DAILY DOUBLES</div>
     <div class="dd-hint">Cet épisode n'a pas de Daily Doubles marqués. Pour en déclencher un toi-même, fais <b>3 tapes</b> sur une case.</div>
     <div class="final-btns"><button class="final-btn good" id="ddTipOk">J'ai compris</button></div>
+  </div>
+</div>
+
+<!-- Écran de signature (rituel candidat) -->
+<div class="sig-overlay" id="sigOverlay">
+  <div class="sig-inner">
+    <div class="sig-title">SIGNE TON NOM</div>
+    <div class="sig-sub">Comme un vrai candidat — dessine avec ton doigt</div>
+    <canvas id="sigCanvas" class="sig-canvas"></canvas>
+    <div class="sig-line">✎</div>
+    <div class="sig-btns">
+      <button class="sig-clear" id="sigClear">Effacer</button>
+      <button class="final-btn good" id="sigDone">Valider</button>
+    </div>
+  </div>
+</div>
+
+<!-- Panneau de règles (bouton « ? ») -->
+<div class="dd-overlay" id="rulesOverlay">
+  <div class="dd-dialog rules-dialog">
+    <div class="dd-title">COMMENT ÇA MARCHE</div>
+    <div class="rules-body">
+      <p><b>C'est un compagnon de pointage</b>, pas un quiz : tu marques <b>ton</b> score en regardant l'émission.</p>
+      <p><b>Marquer une case :</b></p>
+      <ul>
+        <li><b>1 tape</b> = réussie (+ la valeur)</li>
+        <li><b>2 tapes</b> = ratée (− la valeur)</li>
+        <li><b>appui long</b> = passée (jouée par un autre, $0)</li>
+        <li><b>3 tapes</b> = Daily Double manuel</li>
+      </ul>
+      <p><b>Daily Doubles :</b> sur les vrais épisodes, ils s'ouvrent tout seuls au clic.</p>
+      <p><b>Catégories :</b> touche un en-tête pour le corriger. Sur <b>Pop Culture</b>, elles sont approximatives — ajuste-les en regardant (mets l'émission en pause au besoin).</p>
+      <p><b>Récompenses :</b> médailles par épisode (! · !! · !!!), streak en battant le n°1, et l'emblème <b>PARFAIT</b>.</p>
+    </div>
+    <div class="final-btns"><button class="final-btn good" id="rulesOk">Compris</button></div>
   </div>
 </div>
 
@@ -860,7 +946,6 @@
     document.getElementById("undoBtn").disabled=true;
     document.getElementById("scoreValue").textContent="$0"; document.getElementById("scoreValue").classList.remove("neg");
     document.getElementById("epPillVal").textContent=e.title;
-    document.getElementById("partialBanner").style.display=e.complete?"none":"block";
     const hasDD=e.dd&&(((e.dd.simple||[]).length)||((e.dd.double||[]).length));
     if(!hasDD && !stats.ddTipSeen) openDDTip(); // pop-up explicatif (une seule fois), au lieu d'un bandeau qui mange la hauteur
     revealed=false; document.getElementById("revealContent").style.display="none";
@@ -1062,12 +1147,13 @@
   $mute.addEventListener("click",()=>{ muted=!muted; $mute.textContent=muted?"🔇":"🔊"; if(muted){ sndStopAll(); } else { ctx(); sfxReset(); if(gameEl.style.display==="none") playTheme(); } }); // réactiver le son reprend le thème hors partie
 
   // ============ ÉCRANS + STATISTIQUES (persistance localStorage) ============
-  const homeEl=document.getElementById("home"), statsEl=document.getElementById("stats");
+  const homeEl=document.getElementById("home"), statsEl=document.getElementById("stats"), optionsEl=document.getElementById("options");
   function showScreen(name){
     homeEl.style.display    = name==="home"     ? "flex"  : "none";
     selector.style.display  = name==="selector" ? "block" : "none";
     gameEl.style.display    = name==="game"     ? "block" : "none";
     statsEl.style.display   = name==="stats"    ? "block" : "none";
+    optionsEl.style.display = name==="options"  ? "block" : "none";
     if(name==="home") startHomeCanvas(); else stopHomeCanvas(); // RAF seulement à l'accueil
     if(name!=="game") sndStop("think"); // pas de musique de réflexion hors du jeu
     if(name==="game"){ sndStop("theme"); } else { playTheme(); } // thème = musique de menu : continu (accueil/stats/sélection/options), stoppé SEULEMENT en partie
@@ -1152,7 +1238,8 @@
   // ---------- Persistance ----------
   const STKEY="geopardie_stats_v1";
   function defaultStats(){ return {episodes:{}, streak:{current:0,best:0}, gamesPlayed:0, totalWon:0, bestEpisode:0,
-    cellsWon:0, cellsLost:0, cellsPassed:0, ddTried:0, ddWon:0, coryatSum:0, coverageSum:0}; }
+    cellsWon:0, cellsLost:0, cellsPassed:0, ddTried:0, ddWon:0, coryatSum:0, coverageSum:0,
+    onboarded:false, signature:null, ddTipSeen:false}; }
   let stats; try{ stats=JSON.parse(localStorage.getItem(STKEY))||defaultStats(); }catch(e){ stats=defaultStats(); }
   function saveStats(){ try{ localStorage.setItem(STKEY, JSON.stringify(stats)); }catch(e){} }
 
@@ -1283,10 +1370,59 @@
       : (stats.gamesPlayed>0 ? ("Meilleure streak : "+stats.streak.best+"  ·  "+stats.gamesPlayed+" parties") : "Bats les légendes, une émission à la fois.");
     const totEp=ITERATIONS.reduce((s,it)=>s+it.collections.reduce((a,c)=>a+c.episodes.length,0),0);
     document.getElementById("homeFoot").textContent = totEp+" épisodes · 2 éditions";
+    // deux modes : premier lancement (COMMENCER) vs menu principal (JOUER/OPTIONS/STATS + « ? » + signature)
+    const on = !!stats.onboarded;
+    document.getElementById("homeMenu").style.display = on ? "flex" : "none";
+    document.getElementById("btnStart").style.display = on ? "none" : "block";
+    document.getElementById("helpBtn").style.display  = on ? "block" : "none";
+    const sig=document.getElementById("homeSig"); sig.replaceChildren();
+    if(on && stats.signature){ const img=document.createElement("img"); img.src=stats.signature; img.alt="Ta signature"; sig.appendChild(img); }
   }
   function goHome(){ updateHome(); showScreen("home"); }
   document.getElementById("btnPlay").addEventListener("click",()=>{ view="iterations"; renderBrowse(); showScreen("selector"); });
   document.getElementById("btnStats").addEventListener("click",()=>{ renderStats(); showScreen("stats"); });
+
+  // ============ ONBOARDING : signature, règles, options ============
+  // ---- Signature (rituel candidat : champ bleu, trait blanc) ----
+  const sigOverlay=document.getElementById("sigOverlay"), sigCanvas=document.getElementById("sigCanvas");
+  let _sigCtx=null,_sigDrawing=false,_sigDirty=false,_sigDoneCb=null;
+  function _sigSize(){ const r=sigCanvas.getBoundingClientRect(); const dpr=Math.min(2,window.devicePixelRatio||1);
+    sigCanvas.width=Math.round(r.width*dpr); sigCanvas.height=Math.round(r.height*dpr);
+    _sigCtx=sigCanvas.getContext("2d"); _sigCtx.scale(dpr,dpr); _sigCtx.lineCap="round"; _sigCtx.lineJoin="round"; _sigCtx.strokeStyle="#fff"; _sigCtx.lineWidth=5; }
+  function _sigPos(e){ const r=sigCanvas.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+  function _sigDown(e){ if(!_sigCtx)return; e.preventDefault(); _sigDrawing=true; _sigDirty=true; try{sigCanvas.setPointerCapture(e.pointerId);}catch(_){} const p=_sigPos(e); _sigCtx.beginPath(); _sigCtx.moveTo(p.x,p.y); _sigCtx.lineTo(p.x+0.1,p.y+0.1); _sigCtx.stroke(); }
+  function _sigMove(e){ if(!_sigDrawing||!_sigCtx)return; e.preventDefault(); const p=_sigPos(e); _sigCtx.lineTo(p.x,p.y); _sigCtx.stroke(); }
+  function _sigUp(){ _sigDrawing=false; }
+  function openSig(doneCb){ _sigDoneCb=doneCb||null; sigOverlay.classList.add("open"); requestAnimationFrame(_sigSize); }
+  function closeSig(){ sigOverlay.classList.remove("open"); }
+  sigCanvas.addEventListener("pointerdown",_sigDown);
+  sigCanvas.addEventListener("pointermove",_sigMove);
+  sigCanvas.addEventListener("pointerup",_sigUp);
+  sigCanvas.addEventListener("pointercancel",_sigUp);
+  document.getElementById("sigClear").addEventListener("click",()=>{ if(_sigCtx)_sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); _sigDirty=false; });
+  document.getElementById("sigDone").addEventListener("click",()=>{ if(_sigDirty){ try{ stats.signature=sigCanvas.toDataURL("image/png"); }catch(e){} } closeSig(); const cb=_sigDoneCb; _sigDoneCb=null; if(cb)cb(); });
+
+  // ---- Règles (panneau « ? ») ----
+  const rulesOverlay=document.getElementById("rulesOverlay");
+  function openRules(){ rulesOverlay.classList.add("open"); }
+  function closeRules(){ rulesOverlay.classList.remove("open"); }
+  document.getElementById("rulesOk").addEventListener("click",closeRules);
+  rulesOverlay.addEventListener("click",e=>{ if(e.target===rulesOverlay)closeRules(); });
+  document.getElementById("helpBtn").addEventListener("click",()=>{ snd("wrong",0.5); openRules(); }); // son candidat « tut tut » (à confirmer à l'oreille)
+
+  // ---- Premier lancement : COMMENCER → signature → règles → menu ----
+  document.getElementById("btnStart").addEventListener("click",()=>{ playTheme(); // démarre le thème (geste = unlock iOS)
+    openSig(()=>{ stats.onboarded=true; saveStats(); updateHome(); openRules(); }); });
+
+  // ---- Écran Options ----
+  function renderOptions(){ panelHead(document.getElementById("optionsHead"),"Options");
+    document.getElementById("optSoundVal").textContent = muted ? "Coupé" : "Activé"; }
+  document.getElementById("btnOptions").addEventListener("click",()=>{ renderOptions(); showScreen("options"); });
+  document.getElementById("optSound").addEventListener("click",()=>{ document.getElementById("muteBtn").click(); renderOptions(); });
+  document.getElementById("optSig").addEventListener("click",()=>{ openSig(()=>{ saveStats(); updateHome(); }); });
+  document.getElementById("optRules").addEventListener("click",openRules);
+  document.getElementById("optIntro").addEventListener("click",()=>{ playTheme(); openSig(()=>{ stats.onboarded=true; saveStats(); updateHome(); openRules(); }); });
+  document.getElementById("optReset").addEventListener("click",()=>{ if(confirm("Effacer TOUTES tes statistiques et ta signature ? Irréversible.")){ stats=defaultStats(); saveStats(); goHome(); } });
 
   // ---------- Démarrage ----------
   // Politique autoplay : au tout premier geste, lancer le thème SI on est (encore) à l'accueil.

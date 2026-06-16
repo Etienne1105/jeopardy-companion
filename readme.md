@@ -19,6 +19,13 @@ Couvre plusieurs éditions : **Pop Culture Jeopardy!** (Prime Video) et **Jeopar
 - **Son authentique Jeopardy!** (bouton mute) : le sting Daily Double à l'ouverture, le *ding* sur les bonnes réponses, le buzzer sur les mauvaises, le remplissage du plateau au reveal, la musique *Think!* en boucle pendant la finale, et le **thème (version longue ~3 min) qui joue en continu sur tous les écrans menu** (accueil, sélection, stats) et s'arrête seulement quand une partie démarre.
 - Animation de score, annuler / recommencer.
 
+## Premier lancement & navigation
+
+- **Rituel d'accueil (une fois)** : au tout premier lancement, l'écran affiche **COMMENCER**. Le thème démarre, puis tu **dessines ta signature** au doigt (comme un vrai candidat, champ bleu + trait blanc). Elle est sauvegardée et réaffichée sur l'accueil.
+- **Menu principal** (lancements suivants) : **JOUER · OPTIONS · STATISTIQUES**, avec ta signature et un bouton **« ? »** en haut à droite pour revoir les règles à tout moment.
+- **Options** : couper/activer le son, refaire ta signature, revoir les règles, revoir l'intro, réinitialiser les statistiques.
+- Les explications « comment ça marche » (marquage des cases, Daily Doubles, catégories à vérifier sur Pop Culture) vivent dans le panneau **« ? »** — fini les bandeaux qui encombrent le plateau.
+
 ## Médailles, streak & statistiques
 
 Deux mécaniques de suivi distinctes qui cohabitent :
