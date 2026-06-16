@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e5e">
 <title>Jeopardy! — Compagnon de pointage</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +16,9 @@
     --text:#fff; --muted:#98a2dc; --ease:cubic-bezier(.2,.8,.25,1);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;}
+  /* iOS : fond bleu partout (zone d'overscroll + châssis) + pas de rubber-band haut/bas */
+  html{background:var(--navy-deep);min-height:100%;overscroll-behavior:none;}
+  html,body{margin:0;padding:0;overscroll-behavior:none;}
   body{
     font-family:'Oswald',sans-serif;
     background:radial-gradient(120% 80% at 50% -10%, #141a8a 0%, var(--navy) 38%, var(--navy-deep) 100%);
@@ -317,6 +320,31 @@
   .cell .amt{transform-origin:center;}
   .board.flipin .cell .amt{animation:cellflip .42s var(--ease) backwards;}
   @keyframes cellflip{from{opacity:0;transform:perspective(420px) rotateX(88deg) scale(.7);}to{opacity:1;transform:perspective(420px) rotateX(0) scale(1);}}
+
+  /* --- Statistiques : tableau de bord à bulles néon (1 couleur par stat via --c) --- */
+  .bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 8px;justify-items:center;margin-bottom:4px;}
+  .bulle{position:relative;width:clamp(82px,27vw,104px);aspect-ratio:1;border-radius:50%;cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;border:2px solid var(--c);color:#fff;
+    background:radial-gradient(circle at 38% 30%, color-mix(in srgb,var(--c) 60%,#0a0e5e), #0a0e5e 76%);
+    box-shadow:0 0 14px color-mix(in srgb,var(--c) 55%,transparent), inset 0 2px 10px rgba(255,255,255,.12), inset 0 -8px 16px rgba(0,0,0,.55);
+    transition:transform .18s var(--ease),box-shadow .2s var(--ease);touch-action:manipulation;}
+  .bulle::before{content:"";position:absolute;top:13%;left:20%;width:38%;height:26%;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.5),transparent 70%);filter:blur(1px);}
+  .bulle:active{transform:scale(.94);}
+  .bulle .v{font-family:'Anton';font-size:clamp(1.2rem,5.5vw,1.5rem);line-height:.95;text-shadow:0 0 9px var(--c);position:relative;z-index:1;}
+  .bulle .k{font-size:.5rem;letter-spacing:.6px;text-transform:uppercase;color:#dfe7ff;margin-top:3px;font-weight:600;position:relative;z-index:1;padding:0 4px;line-height:1.1;}
+  .bulle.sel{transform:scale(1.1);box-shadow:0 0 28px var(--c),0 0 8px var(--c),inset 0 2px 10px rgba(255,255,255,.15),inset 0 -8px 16px rgba(0,0,0,.5);}
+  .bulle.sel::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1.5px solid var(--c);opacity:.5;animation:bring 1.6s var(--ease) infinite;}
+  @keyframes bring{0%{transform:scale(1);opacity:.5;}100%{transform:scale(1.18);opacity:0;}}
+  .bdetail{margin-top:20px;border-radius:16px;padding:16px 16px 18px;position:relative;overflow:hidden;
+    background:linear-gradient(160deg,color-mix(in srgb,var(--c) 22%,#0c133f),#0a0e36);
+    border:1px solid color-mix(in srgb,var(--c) 50%,transparent);box-shadow:0 0 22px color-mix(in srgb,var(--c) 30%,transparent);}
+  .bdetail .dt{font-family:'Anton';font-size:1.15rem;color:#fff;text-shadow:0 0 10px var(--c);}
+  .bdetail .dbig{font-family:'Anton';font-size:2.5rem;color:var(--c);line-height:1;margin:4px 0 2px;text-shadow:0 0 16px color-mix(in srgb,var(--c) 70%,transparent);}
+  .bdetail .dsub{color:#cdd4ff;font-size:.82rem;line-height:1.5;}
+  .bdetail .bprog{height:10px;border-radius:6px;background:rgba(2,4,20,.55);overflow:hidden;margin:12px 0 4px;border:1px solid rgba(255,255,255,.08);}
+  .bdetail .bprog > i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 60%,#000),var(--c));box-shadow:0 0 10px var(--c);}
+  .bdetail .bcap{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);gap:10px;}
+  .bdetail .bcap span:last-child{text-align:right;}
 </style>
 </head>
 <body>
@@ -1078,48 +1106,58 @@
   function renderStats(){
     panelHead(document.getElementById("statsHead"),"Statistiques");
     const body=document.getElementById("statsBody"); body.replaceChildren();
-    const m=countMedals(), trophies=m.streak+m.perfect;
-    const c1=panelCard(null); const hero=el("div","stat-hero"); hero.appendChild(el("div","num",String(stats.streak.current))); hero.appendChild(el("div","lbl","Streak actuelle")); c1.appendChild(hero);
-    c1.appendChild(statLine("Meilleure streak", String(stats.streak.best)));
-    c1.appendChild(statLine("Record de Ken Jennings", String(KEN_STREAK)));
-    c1.appendChild(progBar(stats.streak.best/KEN_STREAK));
-    const cap=el("div","prog-cap"); cap.appendChild(el("span",null,"0")); cap.appendChild(el("span",null, stats.streak.best>=KEN_STREAK?"Ken égalé !":("encore "+(KEN_STREAK-stats.streak.best)+" pour Ken"))); c1.appendChild(cap);
-    body.appendChild(c1);
-    const c2=panelCard("Carrière");
-    c2.appendChild(statLine("Parties jouées", String(stats.gamesPlayed)));
-    c2.appendChild(statLine("Total amassé", fmt(stats.totalWon)));
-    c2.appendChild(statLine("Meilleur épisode", fmt(stats.bestEpisode)));
-    c2.appendChild(statLine("Trophées (victoires propres)", String(trophies)));
-    c2.appendChild(statLine("PARFAITs", String(m.perfect)));
-    body.appendChild(c2);
-    const c3=panelCard("Course aux légendes");
-    c3.appendChild(statLine("Total vs Ken Jennings", fmt(KEN_TOTAL))); c3.appendChild(progBar(stats.totalWon/KEN_TOTAL));
-    c3.appendChild(statLine("Meilleur épisode vs Holzhauer", fmt(HOLZ_BEST))); c3.appendChild(progBar(stats.bestEpisode/HOLZ_BEST));
-    body.appendChild(c3);
-    const c4=panelCard("Médailles par épisode");
-    c4.appendChild(statLine("! — précision 70 %+", String(m["!"])));
-    c4.appendChild(statLine("!! — 85 %+", String(m["!!"])));
-    c4.appendChild(statLine("!!! — sans-faute", String(m["!!!"])));
-    c4.appendChild(statLine("Streak — bat le n°1 proprement", String(m.streak)));
-    c4.appendChild(statLine("PARFAIT — court le plateau", String(m.perfect)));
-    body.appendChild(c4);
-    const att=stats.cellsWon+stats.cellsLost;
-    const acc= att? stats.cellsWon/att : 0;
-    const ddr= stats.ddTried? stats.ddWon/stats.ddTried : 0;
-    const cor= stats.gamesPlayed? stats.coryatSum/stats.gamesPlayed : 0;
-    const cov= stats.gamesPlayed? stats.coverageSum/stats.gamesPlayed : 0;
-    const avg= stats.gamesPlayed? stats.totalWon/stats.gamesPlayed : 0;
-    const c5=panelCard("Statistiques détaillées");
-    c5.appendChild(statLine("Coryat moyen", fmt(Math.round(cor))));
-    c5.appendChild(statLine("Taux de réussite (cases)", Math.round(acc*100)+" %"));
-    c5.appendChild(statLine("Daily Doubles réussis", stats.ddWon+" / "+stats.ddTried+" ("+Math.round(ddr*100)+" %)"));
-    c5.appendChild(statLine("Couverture moyenne", Math.round(cov*100)+" %"));
-    c5.appendChild(statLine("Score moyen / partie", fmt(Math.round(avg))));
-    body.appendChild(c5);
-    const c6=panelCard(null);
-    const rb=el("button","opt-reset","Réinitialiser les statistiques");
+    const m=countMedals();
+    const att=stats.cellsWon+stats.cellsLost, acc=att?Math.round(stats.cellsWon/att*100):0;
+    const ddp=stats.ddTried?Math.round(stats.ddWon/stats.ddTried*100):0;
+    const cor=stats.gamesPlayed?Math.round(stats.coryatSum/stats.gamesPlayed):0;
+    const cov=stats.gamesPlayed?Math.round(stats.coverageSum/stats.gamesPlayed*100):0;
+    const avg=stats.gamesPlayed?Math.round(stats.totalWon/stats.gamesPlayed):0;
+    const totMed=m["!"]+m["!!"]+m["!!!"]+m.streak+m.perfect;
+    const kfmt=n=> n>=1000 ? "$"+Math.round(n/1000)+"k" : fmt(n);
+    const hint=el("div","hint"); hint.style.margin="2px 0 16px"; hint.textContent="Touche une bulle pour voir le détail 👇"; body.appendChild(hint);
+    const grid=el("div","bgrid"); body.appendChild(grid);
+    const detail=el("div","bdetail"); body.appendChild(detail);
+    // chaque bulle : 1 couleur (--c) qui pilote remplissage/bordure/glow/panneau ; dsub = stats numériques + libellés fixes (aucun input utilisateur)
+    const BUBBLES=[
+      {c:"#ff3da6",k:"Streak",v:String(stats.streak.current),dt:"Streak actuelle",dbig:String(stats.streak.current),
+        dsub:"Meilleure streak : <b>"+stats.streak.best+"</b>. Bats le n°1 dans les règles de l'art pour la faire grimper.",frac:stats.streak.best/KEN_STREAK,capL:"0",capR:"Ken Jennings : "+KEN_STREAK},
+      {c:"#27e3ff",k:"Précision",v:acc+"%",dt:"Taux de réussite",dbig:acc+"%",
+        dsub:"<b>"+stats.cellsWon+"</b> cases réussies · <b>"+stats.cellsLost+"</b> ratées sur la carrière.",frac:acc/100,capL:"0 %",capR:"100 %"},
+      {c:"#ffd23f",k:"Coryat moyen",v:cor>=1000?(cor/1000).toFixed(1)+"k":String(cor),dt:"Coryat moyen",dbig:fmt(cor),
+        dsub:"Score « pur » moyen par partie (hors paris des Daily Doubles et de la finale).",frac:cor/60000,capL:"$0",capR:"$60k (élite)"},
+      {c:"#22e58a",k:"Daily Doubles",v:ddp+"%",dt:"Daily Doubles",dbig:stats.ddWon+"/"+stats.ddTried,
+        dsub:"<b>"+ddp+"%</b> de réussite. Même Ken Jennings n'a pas tout réussi — vis l'adrénaline !",frac:ddp/100,capL:"0 %",capR:"100 %"},
+      {c:"#4a83ff",k:"Couverture",v:cov+"%",dt:"Couverture du plateau",dbig:cov+"%",
+        dsub:"Part des cases que tu résous en moyenne (sur 60 par épisode).",frac:cov/100,capL:"0 %",capR:"100 %"},
+      {c:"#ff9a3d",k:"Total carrière",v:kfmt(stats.totalWon),dt:"Course à Ken",dbig:fmt(stats.totalWon),
+        dsub:"Total amassé sur <b>"+stats.gamesPlayed+"</b> parties. Objectif ultime : les "+fmt(KEN_TOTAL)+" de Ken.",frac:stats.totalWon/KEN_TOTAL,capL:"$0",capR:"Ken : "+fmt(KEN_TOTAL)},
+      {c:"#ff5a4a",k:"Meilleur ép.",v:kfmt(stats.bestEpisode),dt:"vs Holzhauer",dbig:fmt(stats.bestEpisode),
+        dsub:"Ton record sur un épisode. Le sommet : les "+fmt(HOLZ_BEST)+" de James Holzhauer.",frac:stats.bestEpisode/HOLZ_BEST,capL:"$0",capR:"Holzhauer : "+fmt(HOLZ_BEST)},
+      {c:"#a77bff",k:"Parties",v:String(stats.gamesPlayed),dt:"Parties jouées",dbig:String(stats.gamesPlayed),
+        dsub:"Score moyen : <b>"+fmt(avg)+"</b> / partie. Plus tu joues, plus tes moyennes se stabilisent.",frac:Math.min(1,stats.gamesPlayed/50),capL:"0",capR:"50"},
+      {c:"#ffd23f",k:"Médailles",v:String(totMed),dt:"Médailles par épisode",dbig:"💎 "+m.perfect,
+        dsub:"<b>"+m["!"]+"</b> ! · <b>"+m["!!"]+"</b> !! · <b>"+m["!!!"]+"</b> !!! · <b>"+m.streak+"</b> streak · <b>"+m.perfect+"</b> PARFAIT",frac:(m.streak+m.perfect)/Math.max(1,stats.gamesPlayed),capL:"0",capR:"victoires propres"},
+    ];
+    function showDetail(bb,btn){
+      detail.style.setProperty("--c",bb.c);
+      grid.querySelectorAll(".bulle").forEach(x=>x.classList.remove("sel")); if(btn)btn.classList.add("sel");
+      detail.replaceChildren();
+      detail.appendChild(el("div","dt",bb.dt));
+      detail.appendChild(el("div","dbig",bb.dbig));
+      const sub=el("div","dsub"); sub.innerHTML=bb.dsub; detail.appendChild(sub); // sûr : valeurs = nombres internes, jamais d'input utilisateur
+      const prog=el("div","bprog"); const ii=document.createElement("i"); ii.style.width=(Math.max(.03,Math.min(1,bb.frac||0))*100).toFixed(0)+"%"; prog.appendChild(ii); detail.appendChild(prog);
+      const cap=el("div","bcap"); cap.appendChild(el("span",null,bb.capL)); cap.appendChild(el("span",null,bb.capR)); detail.appendChild(cap);
+    }
+    BUBBLES.forEach((bb,i)=>{
+      const btn=el("button","bulle"); btn.style.setProperty("--c",bb.c);
+      btn.appendChild(el("span","v",bb.v)); btn.appendChild(el("span","k",bb.k));
+      btn.addEventListener("click",()=>showDetail(bb,btn));
+      grid.appendChild(btn);
+    });
+    showDetail(BUBBLES[0], grid.querySelector(".bulle")); // streak sélectionnée par défaut
+    const rb=el("button","opt-reset","Réinitialiser les statistiques"); rb.style.marginTop="20px";
     rb.addEventListener("click",()=>{ if(confirm("Effacer TOUTES tes statistiques ? Irréversible.")){ stats=defaultStats(); saveStats(); renderStats(); } });
-    c6.appendChild(rb); body.appendChild(c6);
+    body.appendChild(rb);
   }
 
   // ---------- Navigation accueil ----------

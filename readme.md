@@ -29,7 +29,7 @@ Deux mécaniques de suivi distinctes qui cohabitent :
   - Affichées sous chaque tuile-niveau, en pips dorés.
 - **Streak** — le marqueur de prestige : enchaîner les épisodes où tu **bats le n°1 dans les règles de l'art** (sans-faute *et* score final supérieur au vrai gagnant). Une **bannière champion** « façon Johnny Gilbert » te couronne tant que la streak tient.
 - **PARFAIT** — récompense rare : une streak sur un épisode où tu couvres quasi tout le plateau débloque un **emblème diamant 3D**.
-- **Écran Statistiques** : streak (vs le record de 74 de Ken Jennings), carrière, course aux légendes (total vs Ken, meilleur épisode vs Holzhauer), médailles par épisode, et stats détaillées (Coryat moyen, taux de réussite, Daily Doubles, couverture, score moyen).
+- **Écran Statistiques** : un **tableau de bord interactif de bulles néon** (une couleur par stat) — touche une bulle pour ouvrir son détail et sa barre de progression vs la légende. Streak (vs les 74 de Ken Jennings), précision, Coryat moyen, Daily Doubles, couverture, total carrière (vs Ken), meilleur épisode (vs Holzhauer), parties jouées, médailles.
 
 Tout est **sauvegardé localement** (`localStorage`) : tes médailles, ta streak et tes totaux de carrière persistent entre les sessions.
 
@@ -81,6 +81,7 @@ python3 -m http.server 8000
 ## Notes
 
 - **Persistance** : tes statistiques (médailles, streak, carrière) sont sauvegardées via `localStorage`. En revanche, le **pointage en cours d'un épisode** repart à zéro si tu recharges en pleine partie.
+- **Mobile / iOS** : overscroll bloqué (`overscroll-behavior`) pour éviter le rubber-band haut/bas, et châssis Safari teinté en bleu (`theme-color`) — plein écran sans bandes blanches.
 - **Données** — catégories, finales, scores réels et positions des Daily Doubles parsés depuis le HTML brut de **J-Archive** (épisodes classiques) ; Pop Culture vient de **The Jeopardy! Fan**. Le détail du périmètre vit dans `notes/`.
 - Les **finales de tournoi** se jouent sur 2 games (score cumulé) : le « gagnant » affiché par épisode est celui *du game*, pas forcément le champion du tournoi.
 - Les **anciens épisodes** (avant nov. 2001, ex. Brad Rutter 2000) utilisaient des valeurs $100–$500 / $200–$1000 ; l'app affiche les valeurs modernes — un repère, pas un calque exact.
