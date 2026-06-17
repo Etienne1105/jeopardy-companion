@@ -7,7 +7,8 @@ Couvre plusieurs éditions : **Pop Culture Jeopardy!** (Prime Video) et **Jeopar
 ## Ce que ça fait
 
 - **Navigation à 3 niveaux** : Édition → Collection → Épisode (présentés en tuiles-niveaux à la Donkey Kong Country / Candy Crush).
-- **89 épisodes jouables**, chacun avec ses 6 catégories Simple, ses 6 catégories Double, sa finale, ses participants et le résultat réel.
+- **125 épisodes jouables**, chacun avec ses 6 catégories Simple, ses 6 catégories Double, sa finale, ses participants et le résultat réel.
+- **Difficulté par épisode** : un *meter* (5 barres, en haut à gauche de chaque tuile) classe l'épisode d'**Accessible** à **Légendaire** selon la hauteur de la barre à battre (le score du vrai champion) — sans jamais révéler le score (anti-spoiler).
 - **Marquage d'une case** :
   - **1 clic** = réussie (+ la valeur)
   - **2 clics** = échec (− la valeur)
@@ -65,6 +66,7 @@ Le « wow » est réservé aux moments rares, pour qu'il garde sa valeur :
 **Jeopardy! classique** — format standard, joueurs solo (données J-Archive)
 - The IBM Challenge (Watson vs Jennings & Rutter, 2011) — 2 games
 - Brad Rutter — run original (S17, 2000) — 5 games
+- Ken Jennings — le run (S21, 2004) — 36 games (parties 40-75, jusqu'à la défaite légendaire vs Nancy Zerg)
 - Tournament of Champions 2015 / 2017 / 2019 — 10 games chacun
 - James Holzhauer (S35, 2019) — 32 victoires
 - *Ultimate Tournament of Champions (S21, 2005) — à venir*
