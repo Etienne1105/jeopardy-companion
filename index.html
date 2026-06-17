@@ -1377,9 +1377,15 @@
   }
   // Difficulté d'un épisode = hauteur de la barre à battre (score du vrai gagnant). 5 tiers, couleurs Néon Pop.
   // On n'expose JAMAIS le score exact ici (anti-spoiler) — uniquement le tier abstrait.
+  function biggestAmount(e){ // plus haut montant ($≥1000) des lignes de résultat — fallback quand le gagnant n'a pas de score parsable
+    if(!e||!e.result||!e.result.lines) return null; let mx=0;
+    for(const line of e.result.lines){ const m=line.match(/\d[\d\s ]*\d|\d/g)||[]; for(const s of m){ const n=parseInt(s.replace(/[^\d]/g,""),10); if(n>=1000 && n>mx) mx=n; } }
+    return mx||null;
+  }
   function difficulty(e){
-    const w=realWinnerScore(e);
-    if(w==null) return null;                                       // barre inconnue (ex. Pop Culture) → pas de badge
+    let w=realWinnerScore(e);
+    if(w==null) w=biggestAmount(e);                                // fallback : résultat narratif (ex. Pop Culture 11/13)
+    if(w==null) return null;                                       // vraiment aucun montant → pas de badge
     if(w<14000) return {lvl:1,label:"Accessible", c:"#27e3ff"};    // cyan
     if(w<22000) return {lvl:2,label:"Standard",   c:"#7da8ff"};    // bleu clair
     if(w<34000) return {lvl:3,label:"Corsé",      c:"#4f7cff"};    // royal
@@ -1556,12 +1562,12 @@
 
   // ---- Quoi de neuf (annonce de version aux joueurs de retour) ----
   // Incrémenter APP_VERSION à chaque vague de nouveautés ; tout joueur dont seenVersion est inférieur la verra une fois.
-  const APP_VERSION=1;
+  const APP_VERSION=2;
   const WHATS_NEW=[
-    "🏆 Classement en ligne — crée ton profil et affronte tes amis",
-    "🖊️ Pseudo & signature — ta bannière de champion est à ton nom",
-    "🔊 Son authentique — thème, buzzer, sting Daily Double, Think!",
-    "🎊 Confetti & juice — célébrations aux paliers et Daily Doubles réussis"
+    "🏆 Le run de Ken Jennings — 36 nouveaux épisodes (sa série de 74 victoires)",
+    "📊 Difficulté par épisode — un meter classe chaque épisode d'Accessible à Légendaire",
+    "🔊 Son de clic sur les boutons + bulles de stats relookées",
+    "🎯 Streak anti-triche — un épisode ne compte qu'une fois dans la série"
   ];
   const whatsNewOverlay=document.getElementById("whatsNewOverlay");
   function openWhatsNew(){
