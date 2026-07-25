@@ -15,7 +15,7 @@
     --cyan:#27e3ff; --magenta:#ff3da6; /* accents Néon Pop (inspi Pop Culture Jeopardy!) — accents seulement, bleu+or restent le cœur */
     --text:#fff; --muted:#98a2dc; --ease:cubic-bezier(.2,.8,.25,1);
   }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}
   /* iOS : fond bleu partout (zone d'overscroll + châssis) + pas de rubber-band haut/bas */
   html{background:var(--navy-deep);min-height:100%;overscroll-behavior:none;}
   html,body{margin:0;padding:0;overscroll-behavior:none;}
@@ -112,7 +112,7 @@
     display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Anton';
     font-size:clamp(.9rem,5.2vw,1.5rem);color:var(--gold);text-shadow:0 2px 0 rgba(0,0,0,.45);
     box-shadow:inset 0 0 0 1px rgba(39,227,255,.16), inset 0 1px 0 rgba(255,255,255,.18), 0 3px 8px rgba(0,0,0,.3);
-    transition:transform .1s var(--ease),background .25s,opacity .25s;touch-action:manipulation;user-select:none;overflow:hidden;}
+    transition:transform .1s var(--ease),background .25s,opacity .25s;touch-action:manipulation;-webkit-user-select:none;user-select:none;overflow:hidden;}
   .cell:active{transform:scale(.93);}
   .cell.pending{animation:pulse .55s var(--ease) infinite alternate;}
   @keyframes pulse{from{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 0 rgba(255,210,63,0);}to{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 3px rgba(255,210,63,.7);}}
@@ -146,17 +146,6 @@
   .final-btn.bad{background:linear-gradient(180deg,var(--lost-hi),var(--lost));} .final-btn:disabled{opacity:.4;cursor:default;}
   .final-result{margin-top:14px;font-weight:600;font-size:.92rem;min-height:1.2em;color:var(--gold-bright);}
 
-  .reveal-wrap{margin-top:12px;}
-  .reveal-btn{width:100%;border:1px dashed rgba(255,210,63,.45);background:rgba(232,185,35,.08);color:var(--gold-bright);
-    font-family:'Oswald';font-weight:600;font-size:.84rem;text-transform:uppercase;letter-spacing:.5px;padding:13px;border-radius:12px;
-    cursor:pointer;transition:background .2s;touch-action:manipulation;}
-  .reveal-btn:active{background:rgba(232,185,35,.16);}
-  .reveal-content{display:none;background:rgba(8,21,132,.55);border:1px solid rgba(255,210,63,.3);border-radius:12px;padding:14px;margin-top:8px;}
-  .reveal-content h4{margin:0 0 8px;font-family:'Anton';color:var(--gold-bright);font-size:1rem;font-weight:400;letter-spacing:.5px;}
-  .reveal-content .res-line{font-size:.82rem;color:#dfe4ff;line-height:1.55;}
-  .reveal-content .res-win{color:var(--won-hi);font-weight:600;}
-  .reveal-content .res-me{margin-top:10px;padding-top:10px;border-top:1px solid rgba(152,162,220,.25);font-size:.86rem;}
-  .reveal-content .res-me b{color:var(--gold-bright);}
 
   .actions{display:flex;gap:8px;margin-top:14px;}
   .action-btn{flex:1;border:1px solid rgba(152,162,220,.3);background:rgba(8,21,132,.5);color:var(--muted);
@@ -270,7 +259,7 @@
   .tile{position:relative;width:100%;aspect-ratio:1;border-radius:14px;cursor:pointer;overflow:hidden;border:1px solid rgba(255,255,255,.10);
     background:linear-gradient(158deg,var(--royal-hi) 0%,var(--royal) 46%,var(--royal-lo) 100%);color:var(--text);
     box-shadow:inset 0 2px 0 rgba(255,255,255,.22),inset 0 -10px 18px rgba(0,0,0,.45),0 7px 16px rgba(0,0,0,.45);
-    transition:transform .14s var(--ease),box-shadow .2s var(--ease);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;touch-action:manipulation;}
+    transition:transform .14s var(--ease),box-shadow .2s var(--ease);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
   .tile::before{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.20),transparent 40%);}
   .tile::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.10) 3px 4px);opacity:.5;}
   .tile:hover{transform:translateY(-4px) scale(1.02);box-shadow:inset 0 2px 0 rgba(255,255,255,.25),inset 0 -10px 18px rgba(0,0,0,.4),0 12px 26px rgba(0,0,0,.55),0 0 0 1px rgba(255,210,63,.4);}
@@ -498,10 +487,6 @@
 
   <div id="boardWrap"></div>
 
-  <div class="reveal-wrap" id="revealWrap">
-    <button class="reveal-btn" id="revealBtn">🏆 Révéler le vrai résultat (spoiler)</button>
-    <div class="reveal-content" id="revealContent"></div>
-  </div>
 
   <div class="actions">
     <button class="action-btn" id="undoBtn" disabled>↩ Annuler</button>
@@ -828,7 +813,7 @@
   const COLS=6,ROWS=5,TAP_WINDOW=260,LONGPRESS=480;
 
   // état
-  let ep=null, round="simple", score=0, displayed=0, muted=false, revealed=false;
+  let ep=null, round="simple", score=0, displayed=0, muted=false;
   let cats={simple:[],double:[],final:""};
   let board={simple:null,double:null};
   let finalState={wager:0,result:null};
@@ -1009,7 +994,7 @@
   addEventListener("resize",()=>{ if(view==="episodes" && selector.style.display!=="none") renderBrowse(); });
 
   function loadEpisode(e){
-    ep=e; round="simple"; score=0; displayed=0; revealed=false;
+    ep=e; round="simple"; score=0; displayed=0;
     cats={simple:[...e.simple],double:[...e.double],final:e.final||""};
     board={simple:Array.from({length:COLS},()=>Array(ROWS).fill(null)),double:Array.from({length:COLS},()=>Array(ROWS).fill(null))};
     finalState={wager:0,result:null}; history.length=0;
@@ -1018,10 +1003,6 @@
     document.getElementById("epPillVal").textContent=e.title;
     const hasDD=e.dd&&(((e.dd.simple||[]).length)||((e.dd.double||[]).length));
     if(!hasDD && !stats.ddTipSeen) openDDTip(); // pop-up explicatif (une seule fois), au lieu d'un bandeau qui mange la hauteur
-    revealed=false; document.getElementById("revealContent").style.display="none";
-    const rb=document.getElementById("revealBtn");
-    rb.textContent= e.result ? "🏆 Révéler le vrai résultat (spoiler)" : "🏆 Résultat non disponible pour cet épisode";
-    rb.disabled=!e.result; rb.style.opacity=e.result?"1":".5";
     document.querySelectorAll(".round-btn").forEach(x=>x.classList.toggle("active",x.dataset.round==="simple"));
     recordedThisSession=false; showScreen("game"); renderBoard();
   }
@@ -1187,20 +1168,6 @@
     p.appendChild(cat); p.appendChild(row); p.appendChild(btns); btns.appendChild(good); btns.appendChild(bad); p.appendChild(res);
     wrap.appendChild(p); if(finalState.result)lock(finalState.result);
   }
-
-  // ---------- Révélation résultat ----------
-  document.getElementById("revealBtn").addEventListener("click",()=>{
-    if(!ep||!ep.result)return; const box=document.getElementById("revealContent");
-    if(!revealed){
-      revealed=true;
-      let html='<h4>Résultat réel — '+ep.title+'</h4>';
-      ep.result.lines.forEach(l=>{ html+='<div class="res-line">'+l+'</div>'; });
-      html+='<div class="res-line res-win">🏆 Équipe gagnante : '+ep.result.winner+'</div>';
-      html+='<div class="res-me">Ton score : <b>'+fmt(score)+'</b><br><span style="color:#98a2dc;font-size:.78rem;">(tu joues en solo — les '+(curIter?curIter.competitorLabel:"équipes")+' sont à 3, donc c\'est un repère, pas un match exact)</span></div>';
-      box.innerHTML=html; box.style.display="block";
-      document.getElementById("revealBtn").textContent="🏆 Masquer le résultat";
-    } else { revealed=false; box.style.display="none"; document.getElementById("revealBtn").textContent="🏆 Révéler le vrai résultat (spoiler)"; }
-  });
 
   // ---------- Manches / actions ----------
   document.querySelectorAll(".round-btn").forEach(b=>b.addEventListener("click",()=>{
