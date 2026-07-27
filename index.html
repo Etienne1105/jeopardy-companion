@@ -153,6 +153,12 @@
     cursor:pointer;transition:all .18s var(--ease);touch-action:manipulation;}
   .action-btn:active{transform:scale(.96);} .action-btn:disabled{opacity:.35;cursor:default;}
   .action-btn.danger{color:#ffb4b4;border-color:rgba(216,49,59,.4);}
+  /* Bouton « Terminer & voir mon rang » (occupe l'espace récupéré du bouton Révéler) */
+  .endgame-btn{width:100%;margin-top:10px;border:1px solid rgba(255,210,63,.4);
+    background:linear-gradient(180deg,rgba(232,185,35,.15),rgba(232,185,35,.05));color:var(--gold-bright);
+    font-family:'Oswald';font-weight:700;font-size:.84rem;text-transform:uppercase;letter-spacing:.6px;
+    padding:13px;border-radius:12px;cursor:pointer;transition:transform .1s var(--ease),background .2s;touch-action:manipulation;}
+  .endgame-btn:active{transform:scale(.98);background:rgba(232,185,35,.22);}
   .hint{text-align:center;color:var(--muted);font-size:.72rem;margin-top:12px;line-height:1.55;opacity:.85;}
   .hint b{color:var(--gold);font-weight:600;}
 
@@ -395,6 +401,37 @@
   .lb-stat .sub{font-size:.62rem;color:var(--muted);}
   .lb-msg{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 16px;line-height:1.5;}
 
+  /* --- Pop-up « Score final » --- */
+  .fs-dialog{max-width:384px;max-height:92vh;overflow-y:auto;text-align:center;padding:22px 18px;}
+  .fs-title{font-family:'Anton';color:var(--gold-bright);font-size:1.5rem;letter-spacing:1px;margin-bottom:2px;}
+  .fs-title .flag{filter:drop-shadow(0 0 8px rgba(255,210,63,.5));}
+  .fs-hero-label{font-family:'Oswald';font-weight:600;font-size:.64rem;letter-spacing:1.6px;text-transform:uppercase;color:#cdd4ff;opacity:.78;margin-top:10px;}
+  .fs-hero{font-family:'Anton';font-size:clamp(3rem,17vw,4.3rem);line-height:.92;color:var(--gold-bright);
+    text-shadow:0 3px 0 rgba(0,0,0,.5),0 0 28px rgba(255,210,63,.42);margin:1px 0 2px;}
+  .fs-hero.neg{color:#ff8f8f;text-shadow:0 3px 0 rgba(0,0,0,.5),0 0 28px rgba(216,49,59,.5);}
+  /* chips métriques — ADN néon-bulle (--c par métrique) */
+  .fs-chips{display:flex;gap:10px;justify-content:center;margin:14px 0 2px;}
+  .fs-chip{flex:1;max-width:150px;border:1.5px solid var(--c);border-radius:14px;padding:10px 6px;
+    background:radial-gradient(circle at 40% 24%,color-mix(in srgb,var(--c) 34%,#0a0e5e),#0a0e5e 82%);
+    box-shadow:0 0 13px color-mix(in srgb,var(--c) 42%,transparent),inset 0 -6px 12px rgba(0,0,0,.45);}
+  .fs-chip .cv{font-family:'Anton';font-size:1.55rem;color:#fff;line-height:1;text-shadow:0 0 9px var(--c);}
+  .fs-chip .ck{font-family:'Oswald';font-size:.55rem;letter-spacing:.7px;text-transform:uppercase;color:#dfe7ff;margin-top:4px;font-weight:600;}
+  /* section rang */
+  .fs-section{margin-top:18px;padding-top:15px;border-top:1px solid rgba(152,162,220,.22);}
+  .fs-section-label{font-family:'Oswald';font-weight:600;font-size:.62rem;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);}
+  .fs-rank-big{font-family:'Anton';font-size:2.1rem;color:var(--gold-bright);line-height:1;text-shadow:0 0 15px rgba(255,210,63,.4);margin-top:3px;}
+  .fs-rank-big small{font-size:.46em;color:var(--muted);font-family:'Oswald';font-weight:600;letter-spacing:.5px;}
+  .fs-lb{margin-top:12px;text-align:left;}
+  .fs-lb .lb-row{animation:fsRow .42s var(--ease) backwards;}
+  @keyframes fsRow{from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:translateX(0);}}
+  .fs-sep{text-align:center;color:var(--muted);font-family:'Anton';font-size:1.1rem;letter-spacing:3px;margin:1px 0 8px;opacity:.55;}
+  .fs-btns{display:grid;grid-template-columns:1fr;gap:9px;margin-top:18px;}
+  .fs-btn{font-family:'Oswald';font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:.86rem;padding:14px;
+    border-radius:12px;cursor:pointer;border:none;transition:transform .1s var(--ease);touch-action:manipulation;}
+  .fs-btn:active{transform:scale(.97);}
+  .fs-btn.primary{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1400;box-shadow:0 4px 0 #9a7b14;}
+  .fs-btn.ghost{background:rgba(8,21,132,.5);border:1px solid rgba(152,162,220,.35);color:#cdd4ff;}
+
   /* --- Reveal flip des montants (damier colonne par colonne) --- */
   .cell .amt{transform-origin:center;}
   .board.flipin .cell .amt{animation:cellflip .42s var(--ease) backwards;}
@@ -492,6 +529,8 @@
     <button class="action-btn" id="undoBtn" disabled>↩ Annuler</button>
     <button class="action-btn danger" id="resetBtn">⟳ Recommencer</button>
   </div>
+
+  <button class="endgame-btn" id="endGameBtn">🏁 Terminer &amp; voir mon rang</button>
 
   <p class="hint">
     <b>1 clic</b> = réussie &nbsp;·&nbsp; <b>2 clics</b> = échec &nbsp;·&nbsp; <b>clic long</b> = passée (ni + ni −)<br>
@@ -592,6 +631,11 @@
     <ul class="wn-list" id="wnList"></ul>
     <div class="final-btns"><button class="final-btn good" id="wnOk">Génial&nbsp;!</button></div>
   </div>
+</div>
+
+<!-- Score final (à la validation de la Finale ou via « Terminer ») -->
+<div class="dd-overlay" id="finalScoreOverlay">
+  <div class="dd-dialog fs-dialog" id="fsDialog"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2" integrity="sha384-JWEyvHh+lRf0sN/WWY+QTQwX+CyWqmNg4tkc8GQzAMEtR2wGNrCJlvnu1lHD1kDm" crossorigin="anonymous"></script>
@@ -1163,7 +1207,7 @@
     const res=document.createElement("div"); res.className="final-result";
     function lock(s){ good.disabled=true; bad.disabled=true; res.textContent= s==="good" ? "✓ +"+fmt(finalState.wager).replace("-","")+" — « Annuler » pour corriger" : "✗ "+fmt(-finalState.wager)+" — « Annuler » pour corriger"; }
     function answer(s){ if(finalState.result)return; const w=finalState.wager||0,delta=s==="good"?w:-w; score+=delta; finalState.result=s;
-      pushHist({kind:"final",prevResult:null,delta}); animateScore(score); flash(s==="good"?"won":"lost"); sndStop("think"); (s==="good")?snd("ding",0.85):snd("wrong",0.85); lock(s); recordGame(); }
+      pushHist({kind:"final",prevResult:null,delta}); animateScore(score); flash(s==="good"?"won":"lost"); sndStop("think"); (s==="good")?snd("ding",0.85):snd("wrong",0.85); lock(s); recordGame(); showFinalScore(); }
     good.addEventListener("click",()=>answer("good")); bad.addEventListener("click",()=>answer("bad"));
     p.appendChild(cat); p.appendChild(row); p.appendChild(btns); btns.appendChild(good); btns.appendChild(bad); p.appendChild(res);
     wrap.appendChild(p); if(finalState.result)lock(finalState.result);
@@ -1179,6 +1223,13 @@
   document.getElementById("resetBtn").addEventListener("click",()=>{
     if(!confirm("Recommencer cet épisode ? Le score et les cases seront remis à zéro."))return;
     if(ep) loadEpisode(ep);
+  });
+  // « Terminer » : enregistre la partie (même sans finale jouée) + ouvre le pop-up Score final
+  document.getElementById("endGameBtn").addEventListener("click",()=>{
+    if(!ep) return;
+    const g=gameStats();
+    if(g.resolved>0 || finalState.result) recordGame(); // n'enregistre que s'il y a du jeu (évite d'inflater gamesPlayed sur un tap accidentel)
+    showFinalScore();
   });
   const $mute=document.getElementById("muteBtn");
   $mute.addEventListener("click",()=>{ muted=!muted; $mute.textContent=muted?"🔇":"🔊"; if(muted){ sndStopAll(); } else { ctx(); sfxReset(); if(gameEl.style.display==="none") playTheme(); } }); // réactiver le son reprend le thème hors partie
@@ -1301,6 +1352,20 @@
         best_streak:stats.streak.best, best_coryat:stats.bestCoryat||0, total_won:stats.totalWon,
         games_played:stats.gamesPlayed, accuracy:curAccuracy() }, {onConflict:"id"});
     }catch(e){} }
+  // Constructeur de ligne de classement — partagé entre le classement plein écran et le pop-up Score final
+  function lbRowEl(p, rank, isMe){
+    const row=document.createElement("div"); row.className="lb-row"+(isMe?" me":"");
+    const rk=document.createElement("div"); rk.className="lb-rank"+(rank<=3?(" r"+rank):""); rk.textContent=rank;
+    const sig=document.createElement("div"); sig.className="lb-sig";
+    if(typeof p.signature==="string" && p.signature.slice(0,11)==="data:image/"){ const img=document.createElement("img"); img.src=p.signature; img.alt=""; sig.appendChild(img); }
+    const nm=document.createElement("div"); nm.className="lb-name"; nm.textContent=p.pseudo||"Joueur"; // textContent = ANTI-XSS (pseudo vient d'un autre joueur)
+    const st=document.createElement("div"); st.className="lb-stat";
+    const v=document.createElement("div"); v.className="v"; v.textContent=(p.best_streak||0); const sm=document.createElement("small"); sm.textContent=" 🔥"; v.appendChild(sm);
+    const sub=document.createElement("div"); sub.className="sub"; sub.textContent="Coryat $"+(p.best_coryat||0).toLocaleString("fr-CA");
+    st.appendChild(v); st.appendChild(sub);
+    row.appendChild(rk); row.appendChild(sig); row.appendChild(nm); row.appendChild(st);
+    return row;
+  }
   async function renderLeaderboard(){
     const head=document.getElementById("lbHead"), body=document.getElementById("lbBody");
     panelHead(head,"Classement"); body.replaceChildren();
@@ -1310,25 +1375,105 @@
     try{
       if(!_uid) await supaAuth();
       const {data,error}=await sb.from("profiles")
-        .select("pseudo,signature,best_streak,best_coryat,total_won,games_played,accuracy")
+        .select("id,pseudo,signature,best_streak,best_coryat,total_won,games_played,accuracy")
         .order("best_streak",{ascending:false}).order("best_coryat",{ascending:false}).limit(50);
       if(error) throw error;
       body.replaceChildren();
       if(!data||!data.length){ const m=document.createElement("div"); m.className="lb-msg"; m.textContent="Personne au classement pour l'instant. Joue une partie pour ouvrir le bal ! 🏆"; body.appendChild(m); return; }
-      data.forEach((p,i)=>{
-        const row=document.createElement("div"); row.className="lb-row"+(stats.pseudo&&p.pseudo===stats.pseudo?" me":"");
-        const rk=document.createElement("div"); rk.className="lb-rank"+(i<3?(" r"+(i+1)):""); rk.textContent=(i+1);
-        const sig=document.createElement("div"); sig.className="lb-sig";
-        if(typeof p.signature==="string" && p.signature.slice(0,11)==="data:image/"){ const img=document.createElement("img"); img.src=p.signature; img.alt=""; sig.appendChild(img); }
-        const nm=document.createElement("div"); nm.className="lb-name"; nm.textContent=p.pseudo||"Joueur"; // textContent = ANTI-XSS (pseudo vient d'un autre joueur)
-        const st=document.createElement("div"); st.className="lb-stat";
-        const v=document.createElement("div"); v.className="v"; v.textContent=(p.best_streak||0); const sm=document.createElement("small"); sm.textContent=" 🔥"; v.appendChild(sm);
-        const sub=document.createElement("div"); sub.className="sub"; sub.textContent="Coryat $"+(p.best_coryat||0).toLocaleString("fr-CA");
-        st.appendChild(v); st.appendChild(sub);
-        row.appendChild(rk); row.appendChild(sig); row.appendChild(nm); row.appendChild(st);
-        body.appendChild(row);
-      });
+      data.forEach((p,i)=>{ body.appendChild(lbRowEl(p, i+1, _uid && p.id===_uid)); }); // match par _uid (pseudo non-unique)
     }catch(e){ body.replaceChildren(); const m=document.createElement("div"); m.className="lb-msg"; m.textContent="Classement indisponible pour l'instant — réessaie plus tard."; body.appendChild(m); }
+  }
+
+  // ---------- Pop-up « Score final » ----------
+  const finalScoreOverlay=document.getElementById("finalScoreOverlay");
+  function closeFinalScore(){ finalScoreOverlay.classList.remove("open"); }
+  finalScoreOverlay.addEventListener("click",e=>{ if(e.target===finalScoreOverlay) closeFinalScore(); });
+  const _mk=(tag,cls,txt)=>{ const e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; };
+  const ordinalFr=n=> n===1 ? "1ᵉʳ" : n+"ᵉ"; // 1ᵉʳ, 2ᵉ, 3ᵉ…
+  function countUp(el,to,dur){ // compteur animé du score héros (réutilise l'easing cubique du score-card)
+    el.classList.toggle("neg",to<0); const t0=performance.now();
+    (function step(now){ const p=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-p,3), v=Math.round(to*e);
+      el.textContent=fmt(v); if(p<1) requestAnimationFrame(step); else el.textContent=fmt(to); })(performance.now());
+  }
+  async function showFinalScore(){
+    if(!ep) return;
+    const g=gameStats();                                   // lecture pure du plateau + score courant
+    const streakNow=(stats.streak&&stats.streak.current)||0;
+    const dlg=document.getElementById("fsDialog"); dlg.replaceChildren();
+
+    // — Titre + héros (score de CETTE partie) —
+    const title=_mk("div","fs-title"); const flag=_mk("span","flag","🏁 "); title.appendChild(flag); title.appendChild(document.createTextNode("SCORE FINAL")); dlg.appendChild(title);
+    dlg.appendChild(_mk("div","fs-hero-label","Ton score — cette partie"));
+    const hero=_mk("div","fs-hero","$0"); dlg.appendChild(hero);
+
+    // — Chips métriques (ADN néon-bulle) —
+    const chips=_mk("div","fs-chips");
+    const chipCor=_mk("div","fs-chip"); chipCor.style.setProperty("--c","#ffd23f");
+    chipCor.appendChild(_mk("div","cv", fmt(g.coryat))); chipCor.appendChild(_mk("div","ck","Coryat"));
+    const chipStr=_mk("div","fs-chip"); chipStr.style.setProperty("--c","#ff8c37");
+    const cvS=_mk("div","cv"); cvS.appendChild(document.createTextNode(streakNow)); const fr=_mk("small",null," 🔥"); fr.style.fontSize=".62em"; cvS.appendChild(fr);
+    chipStr.appendChild(cvS); chipStr.appendChild(_mk("div","ck","Série"));
+    chips.appendChild(chipCor); chips.appendChild(chipStr); dlg.appendChild(chips);
+
+    // — Section rang (remplie en async) —
+    const section=_mk("div","fs-section");
+    const secLabel=_mk("div","fs-section-label","Ton rang au classement"); section.appendChild(secLabel);
+    const rankBig=_mk("div","fs-rank-big","…"); section.appendChild(rankBig);
+    const lbWrap=_mk("div","fs-lb"); section.appendChild(lbWrap); dlg.appendChild(section);
+
+    // — Boutons —
+    const btns=_mk("div","fs-btns");
+    const full=_mk("button","fs-btn ghost","Voir le classement complet");
+    const cont=_mk("button","fs-btn primary","Continuer");
+    full.addEventListener("click",()=>{ closeFinalScore(); renderLeaderboard(); showScreen("leaderboard"); });
+    cont.addEventListener("click",closeFinalScore);
+    btns.appendChild(full); btns.appendChild(cont); dlg.appendChild(btns);
+
+    // — Ouvre + anime le héros —
+    finalScoreOverlay.classList.add("open");
+    countUp(hero, score, 750);
+
+    // — Charge le classement (pas de pseudo / hors-ligne → repli local) —
+    if(!sb || !stats.pseudo){
+      secLabel.textContent = stats.pseudo ? "Classement" : "Classement";
+      rankBig.style.display="none";
+      lbWrap.appendChild(_mk("div","lb-msg", stats.pseudo ? "Classement indisponible hors-ligne — ton score reste sauvé en local." : "Ajoute un pseudo (menu ⚙ → Profil) pour apparaître au classement."));
+      return;
+    }
+    lbWrap.appendChild(_mk("div","lb-msg","Chargement du classement…"));
+    try{
+      if(!_uid) await supaAuth();
+      await syncProfile();                                 // pousse best_coryat/streak À JOUR avant de lire (read-after-write)
+      const {data,error}=await sb.from("profiles")
+        .select("id,pseudo,signature,best_streak,best_coryat,total_won,games_played,accuracy")
+        .order("best_streak",{ascending:false}).order("best_coryat",{ascending:false}).limit(50);
+      if(error) throw error;
+      if(!finalScoreOverlay.classList.contains("open")) return; // l'utilisateur a pu fermer entre-temps
+      const myIdx = _uid ? data.findIndex(p=>p.id===_uid) : -1;
+      const rows=[];                                        // {p,rank,me} ou {sep:true}
+      if(myIdx<0){                                          // hors top 50 (rare) → top 3 en repère
+        rankBig.textContent="—";
+        data.slice(0,3).forEach((p,i)=>rows.push({p,rank:i+1,me:false}));
+      } else {
+        const myRank=myIdx+1;
+        rankBig.replaceChildren(document.createTextNode(ordinalFr(myRank)), Object.assign(document.createElement("small"),{textContent:" / "+data.length}));
+        if(myRank<=4){                                      // dans le haut → top 5
+          data.slice(0,5).forEach((p,i)=>rows.push({p,rank:i+1,me:_uid&&p.id===_uid}));
+        } else {                                            // sinon : top 3 + séparateur + voisinage [moi-1, moi, moi+1]
+          data.slice(0,3).forEach((p,i)=>rows.push({p,rank:i+1,me:false}));
+          rows.push({sep:true});
+          for(let k=myIdx-1;k<=myIdx+1 && k<data.length;k++){ if(k>=3) rows.push({p:data[k],rank:k+1,me:k===myIdx}); }
+        }
+      }
+      lbWrap.replaceChildren();
+      let delay=0;
+      rows.forEach(w=>{
+        if(w.sep){ lbWrap.appendChild(_mk("div","fs-sep","• • •")); return; }
+        const row=lbRowEl(w.p, w.rank, w.me); row.style.animationDelay=(delay+=0.06).toFixed(2)+"s"; lbWrap.appendChild(row);
+      });
+    }catch(e){
+      if(finalScoreOverlay.classList.contains("open")){ rankBig.textContent="—"; lbWrap.replaceChildren(_mk("div","lb-msg","Classement indisponible pour l'instant — ton score reste sauvé en local.")); }
+    }
   }
 
   // ---------- Calcul d'une partie + médaille (échelle gigogne) ----------
