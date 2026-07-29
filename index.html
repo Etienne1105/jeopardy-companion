@@ -1376,6 +1376,7 @@
       if(!_uid) await supaAuth();
       const {data,error}=await sb.from("profiles")
         .select("id,pseudo,signature,best_streak,best_coryat,total_won,games_played,accuracy")
+        .gt("games_played",0) // n'affiche que les joueurs ayant fini au moins une partie (cache les profils créés mais jamais joués)
         .order("best_streak",{ascending:false}).order("best_coryat",{ascending:false}).limit(50);
       if(error) throw error;
       body.replaceChildren();
@@ -1446,6 +1447,7 @@
       await syncProfile();                                 // pousse best_coryat/streak À JOUR avant de lire (read-after-write)
       const {data,error}=await sb.from("profiles")
         .select("id,pseudo,signature,best_streak,best_coryat,total_won,games_played,accuracy")
+        .gt("games_played",0) // n'affiche que les joueurs ayant fini au moins une partie (cache les profils créés mais jamais joués)
         .order("best_streak",{ascending:false}).order("best_coryat",{ascending:false}).limit(50);
       if(error) throw error;
       if(!finalScoreOverlay.classList.contains("open")) return; // l'utilisateur a pu fermer entre-temps
