@@ -1435,7 +1435,7 @@
 
     // — Charge le classement (pas de pseudo / hors-ligne → repli local) —
     if(!sb || !stats.pseudo){
-      secLabel.textContent = stats.pseudo ? "Classement" : "Classement";
+      secLabel.textContent = "Classement";
       rankBig.style.display="none";
       lbWrap.appendChild(_mk("div","lb-msg", stats.pseudo ? "Classement indisponible hors-ligne — ton score reste sauvé en local." : "Ajoute un pseudo (menu ⚙ → Profil) pour apparaître au classement."));
       return;
@@ -1674,12 +1674,11 @@
 
   // ---- Quoi de neuf (annonce de version aux joueurs de retour) ----
   // Incrémenter APP_VERSION à chaque vague de nouveautés ; tout joueur dont seenVersion est inférieur la verra une fois.
-  const APP_VERSION=2;
+  const APP_VERSION=3;
   const WHATS_NEW=[
-    "🏆 Le run de Ken Jennings — 36 nouveaux épisodes (sa série de 74 victoires)",
-    "📊 Difficulté par épisode — un meter classe chaque épisode d'Accessible à Légendaire",
-    "🔊 Son de clic sur les boutons + bulles de stats relookées",
-    "🎯 Streak anti-triche — un épisode ne compte qu'une fois dans la série"
+    "🏁 Score final — à la fin d'une partie, ton rang au classement s'affiche direct",
+    "🎬 Nouveau bouton « Terminer » — enregistre ta partie même sans jouer la Finale",
+    "📱 Fini la loupe iOS — plus de sélection de texte qui saute au clic long sur une case"
   ];
   const whatsNewOverlay=document.getElementById("whatsNewOverlay");
   function openWhatsNew(){
